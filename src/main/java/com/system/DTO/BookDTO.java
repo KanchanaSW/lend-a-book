@@ -1,32 +1,15 @@
-package com.system.models;
+package com.system.DTO;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
 
-@Entity
-@Table(name = "Books")
-public class Book {
-
-    @Id
-    @NotNull
+public class BookDTO {
     public Long isbn;
-
-    @NotNull
     private String title;
-    @NotNull
     private String author;
-    @NotNull
     private String publisher;
-    @NotNull
     private int copiesAvi;
     private String coverPage;
 
-    public Book(){}
-
-    public Book(Long isbn, String title, String author, String publisher, int copiesAvi, String coverPage) {
+    public BookDTO(Long isbn, String title, String author, String publisher, int copiesAvi, String coverPage) {
         this.isbn = isbn;
         this.title = title;
         this.author = author;
@@ -34,14 +17,9 @@ public class Book {
         this.copiesAvi = copiesAvi;
         this.coverPage = coverPage;
     }
-    public Book(String title, String author, String publisher, int copiesAvi, String coverPage) {
-        this.title = title;
-        this.author = author;
-        this.publisher = publisher;
-        this.copiesAvi = copiesAvi;
-        this.coverPage = coverPage;
-    }
 
+    public BookDTO() {
+    }
 
     public Long getIsbn() {
         return isbn;

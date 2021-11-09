@@ -8,6 +8,7 @@ public class LMSApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(LMSApplication.class, args);
+		System.out.println("LEND-A-BOOK");
 	}
 
 }

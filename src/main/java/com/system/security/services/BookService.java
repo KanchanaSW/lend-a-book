@@ -1,7 +1,8 @@
 package com.system.security.services;
 
+import com.system.DTO.BookDTO;
 import com.system.models.Book;
-import com.system.repository.CrudBookRepo;
+import com.system.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,63 +11,95 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class BookService implements ImplBookService{
+public class BookService {
 
     @Autowired
-    private CrudBookRepo crudBookRepo;
+    private BookRepository bookRepository;
 
-   @Override
-    public List<Book> getALl() {
+    public List<Book> getALlBooks() {
         List<Book> list=new ArrayList<>();
-        crudBookRepo.findAll().forEach(e->list.add(e));
+        bookRepository.findAll().forEach(e->list.add(e));
         return list;
     }
-   @Override
-    public Boolean existsBookISBN(long isbn) {
-        if(crudBookRepo.existsById(isbn)){
-            return true;
-        }else{
-            return false;
+
+    public boolean existsIsbn(Long isbn){
+        return bookRepository.existsById(isbn);
+    }
+    public boolean existsTitle(String title){
+        return bookRepository.existsByTitle(title);
+    }
+    public boolean existsAuthor(String author){
+        return bookRepository.existsByAuthor(author);
+    }
+
+    public Book addBook(BookDTO bookDTO){
+        try {
+            Book book = new Book();
+            book.setIsbn(bookDTO.getIsbn());
+            book.setTitle(bookDTO.getTitle());
+            book.setAuthor(bookDTO.getAuthor());
+            book.setPublisher(bookDTO.getPublisher());
+            book.setCopiesAvi(bookDTO.getCopiesAvi());
+            book.setCoverPage(bookDTO.getCoverPage());
+
+            bookRepository.save(book);
+            return book;
+
+        }catch (Exception e){
+            return null;
         }
     }
-    @Override
-    public void addBook(Book book) {
-        crudBookRepo.save(book);
+    public long countAllBooks(){
+       return bookRepository.count();
     }
-
-    @Override
-    public Optional<Book> findByIsbn(long isbn) {
-        Optional<Book> dd=crudBookRepo.findByIsbn(isbn);
-        return dd;
+    public Book findBook(long isbn){
+        Optional<Book> book=bookRepository.findById(isbn);
+        Book b=null;
+        if (book.isPresent()){
+            b=book.get();
+        }
+        return b;
     }
-
-    @Override
-    public List<Book> findByTitle(String title) {
-        List<Book> dd=crudBookRepo.findByTitle(title);
-        return dd;
+    public Book findBookTitle(String title){
+        Book book=bookRepository.findByTitle(title);
+       return book;
     }
+    public Book updateBook(BookDTO bookDTO){
+        try{
+            Book book = bookRepository.getById(bookDTO.getIsbn());
+            book.setTitle(bookDTO.getTitle());
+            book.setAuthor(bookDTO.getAuthor());
+            book.setPublisher(bookDTO.getPublisher());
+            book.setCopiesAvi(bookDTO.getCopiesAvi());
+            book.setCoverPage(bookDTO.getCoverPage());
 
-    @Override
-    public Boolean existsBookTitle(String title) {
-        if(crudBookRepo.existsByTitle(title)){
-            return true;
-        }else{
-            return false;
+            bookRepository.save(book);
+            return book;
+        }catch (Exception e){
+            return null;
         }
     }
-
-    @Override
-    public void updateBook(Book book) {
-        crudBookRepo.save(book);
+    public void deleteBook(long isbn){
+        bookRepository.deleteById(isbn);
     }
 
-    @Override
-    public void deleteBook(long isbn) {
-        crudBookRepo.deleteById(isbn);
-    }
-
-    @Override
-    public long countAll() {
-        return crudBookRepo.count();
-    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
