@@ -1,0 +1,238 @@
+package com.system.controllers;
+
+import com.system.DTO.BookDTO;
+import com.system.DTO.MovieDTO;
+import com.system.models.Book;
+import com.system.models.Movie;
+import com.system.payload.response.MessageResponse;
+import com.system.security.services.BookService;
+import com.system.security.services.MovieService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
+
+@CrossOrigin(origins = "*",maxAge = 3600)
+@RestController
+@RequestMapping("/api/admin")
+public class AdminController {
+    @Autowired
+    private BookService bookService;
+    @Autowired
+    private MovieService movieService;
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     //  ****************************************** Book Functions*******************************************************
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //add book
+    @RequestMapping(value = "/addBook")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> addBook(@RequestBody BookDTO newBook){
+        try {
+            if (bookService.existsIsbn(newBook.getIsbn())) {
+                return ResponseEntity.badRequest().body(
+                        new MessageResponse("Error : Book already exists with the same ISBN"));
+            } else if (bookService.existsTitle(newBook.getTitle())) {
+                return ResponseEntity.badRequest().body(
+                        new MessageResponse("Error : Book already exists with the same Title"));
+            } else {
+                bookService.addBook(newBook);
+                return ResponseEntity.ok(new MessageResponse("Success : Book added!!!"));
+            }
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new MessageResponse("error occcured"+e));
+        }
+    }
+    // view all books
+    @RequestMapping(method = RequestMethod.GET,value = "/books")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getAllBookList(){
+        try {
+            List<Book> list = bookService.getALlBooks();
+            return ResponseEntity.ok().body(list);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new MessageResponse("error occcured get all books"+e));
+        }
+    }
+    //count all books
+    @RequestMapping(method = RequestMethod.GET,value = "/books/count")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> countAllbooks(){
+        long x=bookService.countAllBooks();
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Count is : "+x);
+    }
+    //get single book details
+    @RequestMapping(method = RequestMethod.GET,value = "/book/{isbn}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getBookDetails(@PathVariable long isbn){
+        if (bookService.existsIsbn(isbn)){
+            Book book= bookService.findBook(isbn);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(book);
+        }else {
+            return ResponseEntity.badRequest().body(
+                    new MessageResponse("Error : book don't exists with the ISBN : "+isbn)
+            );
+        }
+    }
+    //get book by title.
+    @RequestMapping(method = RequestMethod.GET,value = "/bookTitle/{title}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> searchBookByTitle(@PathVariable String title){
+        if (bookService.existsTitle(title)){
+            Book book= bookService.findBookTitle(title);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(book);
+        }else {
+            return ResponseEntity.badRequest().body(
+                    new MessageResponse("Error : book don't exists with the title : "+title)
+            );
+        }
+    }
+    //update book details here.
+    @RequestMapping(method = RequestMethod.PUT,value = "/updateBook")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateBook(@Valid @RequestBody BookDTO book){
+        try {
+            if (bookService.existsIsbn(book.getIsbn())) {
+                bookService.updateBook(book);
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(book);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        new MessageResponse("Error : book dont exists with isbn :" + book.getIsbn())
+                );
+            }
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new MessageResponse("error occcured"+e));
+        }
+    }
+    //delete book
+    @RequestMapping(method = RequestMethod.DELETE,value = "/deleteBook/{isbn}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteBook(@PathVariable long isbn){
+        if (bookService.existsIsbn(isbn)){
+            bookService.deleteBook(isbn);
+            return ResponseEntity.ok(new MessageResponse("Success: Book deleted!!"));
+        }else {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error : no book with this isbn : "+isbn));
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //********************************************Movie Functions*****************************************************
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //add new Movie
+    @RequestMapping(value = "/addMovie")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> addMovie(@RequestBody MovieDTO movieDTO){
+        try {
+            if (movieService.existsById(movieDTO.getMovieId())) {
+                return ResponseEntity.badRequest().body(
+                        new MessageResponse("Error : Movie already exists with the same Id"));
+            } else if (movieService.existsByTitle(movieDTO.getTitle())) {
+                return ResponseEntity.badRequest().body(
+                        new MessageResponse("Error : Movie already exists with the same Title"));
+            } else {
+                movieService.addMovie(movieDTO);
+                return ResponseEntity.ok(new MessageResponse("Success : Movie added!!!"));
+            }
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new MessageResponse("error occcured"+e));
+        }
+    }
+    //view al movies
+    @RequestMapping(method = RequestMethod.GET,value = "/movies")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getAllMovieList(){
+        try {
+            List<Movie> list= movieService.getAllMovies();
+            return ResponseEntity.ok().body(list);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new MessageResponse("error occcured get all Movies"+e));
+        }
+    }
+    //get single book details
+    @RequestMapping(method = RequestMethod.GET,value = "/movie/{movieId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getMovieDetails(@PathVariable long movieId){
+        if (movieService.existsById(movieId)){
+            Movie movie= movieService.findMovieByID(movieId);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(movie);
+        }else {
+            return ResponseEntity.badRequest().body(
+                    new MessageResponse("Error : movie don't exists with the movieId : "+movieId)
+            );
+        }
+    }
+    //get single book details by title
+    @RequestMapping(method = RequestMethod.GET,value = "/movieByTitle/{title}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getMovieDetailsByTitle(@PathVariable String title){
+        if (movieService.existsByTitle(title)){
+            Movie movie= movieService.findMovieByTitle(title);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(movie);
+        }else {
+            return ResponseEntity.badRequest().body(
+                    new MessageResponse("Error : movie don't exists with the title : "+title)
+            );
+        }
+    }
+    //update movie details here.
+    @RequestMapping(method = RequestMethod.PUT,value = "/updateBook")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateMovie(@Valid @RequestBody MovieDTO movieDTO){
+        try {
+            if (movieService.existsById(movieDTO.getMovieId())) {
+                movieService.updateMovie(movieDTO);
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(movieDTO);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        new MessageResponse("Error : Movie don't exists with MovieId :" + movieDTO.getMovieId())
+                );
+            }
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new MessageResponse("error occcured"+e));
+        }
+    }
+    //delete Movie
+    @RequestMapping(method = RequestMethod.DELETE,value = "/deleteMovie/{movieId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteMovie(@PathVariable long movieId){
+        if (movieService.existsById(movieId)){
+            movieService.deleteMovie(movieId);
+            return ResponseEntity.ok(new MessageResponse("Success: Movie deleted!!"));
+        }else {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error : no Movie with this movieId : "+movieId));
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //********************************************
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}

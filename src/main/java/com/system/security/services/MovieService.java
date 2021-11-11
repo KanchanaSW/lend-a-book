@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MovieService {
@@ -31,7 +32,7 @@ public class MovieService {
     //list 18+ movies
     public List<Movie> getRRatedMovies(){
         List<Movie> list=new ArrayList<>();
-        movieRepository.findByR18(true);
+        movieRepository.findByR18(true).forEach(e->list.add(e));
         return list;
     }
     public Movie addMovie(MovieDTO movieDTO){
@@ -50,8 +51,37 @@ public class MovieService {
             return null;
         }
     }
+    public Movie updateMovie(MovieDTO movieDTO){
+        try{
+            Movie m=movieRepository.getById(movieDTO.getMovieId());
+            m.setTitle(movieDTO.getTitle());
+            m.setWriter(movieDTO.getWriter());
+            m.setDirecter(movieDTO.getDirecter());
+            m.setCopiesAvailable(movieDTO.getCopiesAvailable());
+            m.setImage(movieDTO.getImage());
+            m.setR18(movieDTO.isR18());
 
-
+            movieRepository.save(m);
+            return m;
+        }catch (Exception e){
+            return null;
+        }
+    }
+    public Movie findMovieByID(long movieId){
+        Optional<Movie> movie=movieRepository.findById(movieId);
+        Movie m=null;
+        if (movie.isPresent()){
+            m=movie.get();
+        }
+        return m;
+    }
+    public Movie findMovieByTitle(String title){
+        Movie movie=movieRepository.findByTitle(title);
+        return movie;
+    }
+    public void deleteMovie(long movieId){
+        movieRepository.deleteById(movieId);
+    }
 
 
 }

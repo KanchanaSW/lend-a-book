@@ -16,4 +16,5 @@ public interface MovieRepository extends JpaRepository<Movie,Long> {
     List<Movie> findByR18(boolean r18);
 
     Movie findByTitle(String title);
+
 }
