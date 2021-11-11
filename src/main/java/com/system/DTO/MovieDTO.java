@@ -7,16 +7,18 @@ public class MovieDTO {
     private String title;
     private String directer;
     private String writer;
+    private String image;
     private int copiesAvailable;
     private boolean r18;
 
     public MovieDTO() {
     }
 
-    public MovieDTO(String title, String directer, String writer, int copiesAvailable, boolean r18) {
+    public MovieDTO(String title, String directer, String writer, String image, int copiesAvailable, boolean r18) {
         this.title = title;
         this.directer = directer;
         this.writer = writer;
+        this.image = image;
         this.copiesAvailable = copiesAvailable;
         this.r18 = r18;
     }
@@ -67,5 +69,13 @@ public class MovieDTO {
 
     public void setR18(boolean r18) {
         this.r18 = r18;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }
