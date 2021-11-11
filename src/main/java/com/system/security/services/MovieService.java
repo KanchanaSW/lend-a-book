@@ -22,6 +22,10 @@ public class MovieService {
     public boolean existsById(Long movieId){
         return movieRepository.existsById(movieId);
     }
+    public int movieCopiesAvailable(Long movieId){
+        Movie movie=movieRepository.getById(movieId);
+        return movie.getCopiesAvailable();
+    }
 
     //list all movies
     public List<Movie> getAllMovies(){
@@ -61,6 +65,16 @@ public class MovieService {
             m.setImage(movieDTO.getImage());
             m.setR18(movieDTO.isR18());
 
+            movieRepository.save(m);
+            return m;
+        }catch (Exception e){
+            return null;
+        }
+    }
+    public Movie updateMovieCopies(long movieId,int copies){
+        try{
+            Movie m=movieRepository.getById(movieId);
+            m.setCopiesAvailable(copies);
             movieRepository.save(m);
             return m;
         }catch (Exception e){

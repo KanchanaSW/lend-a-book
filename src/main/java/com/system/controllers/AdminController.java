@@ -18,6 +18,7 @@ import java.util.List;
 
 @CrossOrigin(origins = "*",maxAge = 3600)
 @RestController
+@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/admin")
 public class AdminController {
     @Autowired
@@ -31,7 +32,6 @@ public class AdminController {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //add book
     @RequestMapping(value = "/addBook")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> addBook(@RequestBody BookDTO newBook){
         try {
             if (bookService.existsIsbn(newBook.getIsbn())) {
@@ -50,7 +50,6 @@ public class AdminController {
     }
     // view all books
     @RequestMapping(method = RequestMethod.GET,value = "/books")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllBookList(){
         try {
             List<Book> list = bookService.getALlBooks();
@@ -61,14 +60,12 @@ public class AdminController {
     }
     //count all books
     @RequestMapping(method = RequestMethod.GET,value = "/books/count")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> countAllbooks(){
         long x=bookService.countAllBooks();
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Count is : "+x);
     }
     //get single book details
     @RequestMapping(method = RequestMethod.GET,value = "/book/{isbn}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getBookDetails(@PathVariable long isbn){
         if (bookService.existsIsbn(isbn)){
             Book book= bookService.findBook(isbn);
@@ -81,7 +78,6 @@ public class AdminController {
     }
     //get book by title.
     @RequestMapping(method = RequestMethod.GET,value = "/bookTitle/{title}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> searchBookByTitle(@PathVariable String title){
         if (bookService.existsTitle(title)){
             Book book= bookService.findBookTitle(title);
@@ -94,7 +90,6 @@ public class AdminController {
     }
     //update book details here.
     @RequestMapping(method = RequestMethod.PUT,value = "/updateBook")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateBook(@Valid @RequestBody BookDTO book){
         try {
             if (bookService.existsIsbn(book.getIsbn())) {
@@ -111,7 +106,6 @@ public class AdminController {
     }
     //delete book
     @RequestMapping(method = RequestMethod.DELETE,value = "/deleteBook/{isbn}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteBook(@PathVariable long isbn){
         if (bookService.existsIsbn(isbn)){
             bookService.deleteBook(isbn);
@@ -122,17 +116,13 @@ public class AdminController {
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //********************************************Movie Functions*****************************************************
+    //********************************************Movie Functions*************************************************************************
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //add new Movie
     @RequestMapping(value = "/addMovie")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> addMovie(@RequestBody MovieDTO movieDTO){
         try {
-            if (movieService.existsById(movieDTO.getMovieId())) {
-                return ResponseEntity.badRequest().body(
-                        new MessageResponse("Error : Movie already exists with the same Id"));
-            } else if (movieService.existsByTitle(movieDTO.getTitle())) {
+            if (movieService.existsByTitle(movieDTO.getTitle())) {
                 return ResponseEntity.badRequest().body(
                         new MessageResponse("Error : Movie already exists with the same Title"));
             } else {
@@ -145,7 +135,6 @@ public class AdminController {
     }
     //view al movies
     @RequestMapping(method = RequestMethod.GET,value = "/movies")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllMovieList(){
         try {
             List<Movie> list= movieService.getAllMovies();
@@ -156,7 +145,6 @@ public class AdminController {
     }
     //get single book details
     @RequestMapping(method = RequestMethod.GET,value = "/movie/{movieId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getMovieDetails(@PathVariable long movieId){
         if (movieService.existsById(movieId)){
             Movie movie= movieService.findMovieByID(movieId);
@@ -169,7 +157,6 @@ public class AdminController {
     }
     //get single book details by title
     @RequestMapping(method = RequestMethod.GET,value = "/movieByTitle/{title}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getMovieDetailsByTitle(@PathVariable String title){
         if (movieService.existsByTitle(title)){
             Movie movie= movieService.findMovieByTitle(title);
@@ -181,8 +168,7 @@ public class AdminController {
         }
     }
     //update movie details here.
-    @RequestMapping(method = RequestMethod.PUT,value = "/updateBook")
-    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(method = RequestMethod.PUT,value = "/updateMovie")
     public ResponseEntity<?> updateMovie(@Valid @RequestBody MovieDTO movieDTO){
         try {
             if (movieService.existsById(movieDTO.getMovieId())) {
@@ -199,7 +185,6 @@ public class AdminController {
     }
     //delete Movie
     @RequestMapping(method = RequestMethod.DELETE,value = "/deleteMovie/{movieId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteMovie(@PathVariable long movieId){
         if (movieService.existsById(movieId)){
             movieService.deleteMovie(movieId);
@@ -208,6 +193,7 @@ public class AdminController {
             return ResponseEntity.badRequest().body(new MessageResponse("Error : no Movie with this movieId : "+movieId));
         }
     }
+
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //********************************************
