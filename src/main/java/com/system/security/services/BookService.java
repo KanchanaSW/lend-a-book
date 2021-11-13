@@ -16,6 +16,10 @@ public class BookService {
     @Autowired
     private BookRepository bookRepository;
 
+    public List<Book> get(List<Long> ids){
+        return bookRepository.findAllById(ids);
+    }
+
     public List<Book> getALlBooks() {
         List<Book> list=new ArrayList<>();
         bookRepository.findAll().forEach(e->list.add(e));
