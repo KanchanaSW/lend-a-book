@@ -34,4 +34,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		return u;
 	}
 	public User getById(Long id){return userRepository.findById(id).get();}
+	public Optional<User> findByUsername(String username){
+		return userRepository.findByEmail(username);
+	}
 }

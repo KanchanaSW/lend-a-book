@@ -9,10 +9,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BookRepository extends JpaRepository<Book, Long> {
+public interface BookRepository extends JpaRepository<Book, Integer> {
 
-    Optional<Book> findById(Long isbn);
-    boolean existsById(Long isbn);
+    Optional<Book> findById(Integer id);
+    boolean existsById(Integer id);
+    boolean existsByIsbn(Long isbn);
     boolean existsByTitle(String title);
     boolean existsByAuthor(String author);
     List<Book> findByAuthor(String author);
@@ -20,4 +21,5 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     //@Query("SELECT b FROM Books b WHERE b.title like ?1%")
     //Book findBooksByTitle(String title);
     Book findByTitle(String title);
+    Book findByIsbn(Long isbn);
 }

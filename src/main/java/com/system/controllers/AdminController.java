@@ -3,14 +3,16 @@ package com.system.controllers;
 import com.system.DTO.BookDTO;
 import com.system.DTO.MovieDTO;
 import com.system.models.Book;
+import com.system.models.Reservation;
 import com.system.models.Movie;
 import com.system.payload.response.MessageResponse;
-import com.system.security.services.BookService;
-import com.system.security.services.MovieService;
+import com.system.repository.BookRepository;
+import com.system.security.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -25,6 +27,13 @@ public class AdminController {
     private BookService bookService;
     @Autowired
     private MovieService movieService;
+    @Autowired
+    private ReservationService reservationService;
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
+    //
+    @Autowired
+    private BookRepository bookRepository;
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,14 +74,14 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Count is : "+x);
     }
     //get single book details
-    @RequestMapping(method = RequestMethod.GET,value = "/book/{isbn}")
-    public ResponseEntity<?> getBookDetails(@PathVariable long isbn){
-        if (bookService.existsIsbn(isbn)){
-            Book book= bookService.findBook(isbn);
+    @RequestMapping(method = RequestMethod.GET,value = "/book/{id}")
+    public ResponseEntity<?> getBookDetails(@PathVariable Integer id){
+        if (bookService.existsId(id)){
+            Book book= bookService.findBook(id);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(book);
         }else {
             return ResponseEntity.badRequest().body(
-                    new MessageResponse("Error : book don't exists with the ISBN : "+isbn)
+                    new MessageResponse("Error : book don't exists with the Id : "+id)
             );
         }
     }
@@ -106,12 +115,12 @@ public class AdminController {
     }
     //delete book
     @RequestMapping(method = RequestMethod.DELETE,value = "/deleteBook/{isbn}")
-    public ResponseEntity<?> deleteBook(@PathVariable long isbn){
-        if (bookService.existsIsbn(isbn)){
-            bookService.deleteBook(isbn);
+    public ResponseEntity<?> deleteBook(@PathVariable Integer id){
+        if (bookService.existsId(id)){
+            bookService.deleteBook(id);
             return ResponseEntity.ok(new MessageResponse("Success: Book deleted!!"));
         }else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error : no book with this isbn : "+isbn));
+            return ResponseEntity.badRequest().body(new MessageResponse("Error : no book with this isbn : "+id));
         }
     }
 
@@ -196,9 +205,32 @@ public class AdminController {
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //********************************************
+    //---------------------------------------------Book Issue Functions***********************************************
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @RequestMapping(method = RequestMethod.POST,value = "/addReservation")
+    public ResponseEntity<?> saveReservation(@RequestBody Reservation reservation, Authentication authentication){
+        UserDetailsImpl userDetails= (UserDetailsImpl) authentication.getPrincipal();
 
+        return reservationService.saveReservation(reservation,userDetails.getEmail(), reservation.getTotalAmount());
+    }
+    @RequestMapping(method = RequestMethod.GET,value = "/allUserReservation")
+    public List<Reservation> viewAllUserReservation(@RequestBody Authentication authentication){
+        UserDetailsImpl userDetails= (UserDetailsImpl) authentication.getPrincipal();
+        return reservationService.getAllReservation(userDetails.getId());
+    }
+    @RequestMapping(method = RequestMethod.GET,value = "/allReservation")
+    public List<Reservation> viewAllReservation(){
+        return reservationService.getAll();
+    }
+    @RequestMapping(method = RequestMethod.GET,value = "/viewReservation/{reservationId}")
+    public Reservation viewAReservation(@PathVariable Integer reservationId){
+        return reservationService.getByReservationId(reservationId);
+    }
+    //update not working
+    @RequestMapping(method = RequestMethod.PUT,value = "updateReservation/{reservationId}")
+    public ResponseEntity<?> updateReservation(@PathVariable Integer reservationId,@RequestBody String status){
+        return reservationService.updateStatusReservation(reservationId,status);
+    }
 
 
 

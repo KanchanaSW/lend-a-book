@@ -16,7 +16,7 @@ public class BookService {
     @Autowired
     private BookRepository bookRepository;
 
-    public List<Book> get(List<Long> ids){
+    public List<Book> get(List<Integer> ids){
         return bookRepository.findAllById(ids);
     }
 
@@ -27,7 +27,10 @@ public class BookService {
     }
 
     public boolean existsIsbn(Long isbn){
-        return bookRepository.existsById(isbn);
+        return bookRepository.existsByIsbn(isbn);
+    }
+    public boolean existsId(Integer id){
+        return bookRepository.existsById(id);
     }
     public boolean existsTitle(String title){
         return bookRepository.existsByTitle(title);
@@ -56,13 +59,16 @@ public class BookService {
     public long countAllBooks(){
        return bookRepository.count();
     }
-    public Book findBook(long isbn){
-        Optional<Book> book=bookRepository.findById(isbn);
+    public Book findBook(Integer id){
+        Optional<Book> book=bookRepository.findById(id);
         Book b=null;
         if (book.isPresent()){
             b=book.get();
         }
         return b;
+    }
+    public Book findBookByIsbn(Long isbn){
+        return bookRepository.findByIsbn(isbn);
     }
     public Book findBookTitle(String title){
         Book book=bookRepository.findByTitle(title);
@@ -70,7 +76,7 @@ public class BookService {
     }
     public Book updateBook(BookDTO bookDTO){
         try{
-            Book book = bookRepository.getById(bookDTO.getIsbn());
+            Book book = bookRepository.getById(bookDTO.getId());
             book.setTitle(bookDTO.getTitle());
             book.setAuthor(bookDTO.getAuthor());
             book.setPublisher(bookDTO.getPublisher());
@@ -83,8 +89,8 @@ public class BookService {
             return null;
         }
     }
-    public void deleteBook(long isbn){
-        bookRepository.deleteById(isbn);
+    public void deleteBook(Integer id){
+        bookRepository.deleteById(id);
     }
 
 }

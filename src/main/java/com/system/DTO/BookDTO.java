@@ -2,6 +2,7 @@ package com.system.DTO;
 
 
 public class BookDTO {
+    public Integer id;
     public Long isbn;
     private String title;
     private String author;
@@ -67,5 +68,13 @@ public class BookDTO {
 
     public void setCoverPage(String coverPage) {
         this.coverPage = coverPage;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 }
