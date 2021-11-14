@@ -20,6 +20,10 @@ public class JwtUtils {
 	@Value("${lab.app.jwtExpirationMs}")
 	private int jwtExpirationMs;
 
+	public Date expirationTime() {
+		return new Date((new Date()).getTime() + jwtExpirationMs);
+	}
+
 	public String generateJwtToken(Authentication authentication) {
 
 		UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();

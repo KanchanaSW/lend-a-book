@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import com.system.models.ERole;
 import com.system.models.Role;
 import com.system.models.User;
 import com.system.payload.request.LoginRequest;
@@ -17,6 +16,7 @@ import com.system.payload.response.MessageResponse;
 import com.system.repository.RoleRepository;
 import com.system.repository.UserRepository;
 import com.system.security.jwt.JwtUtils;
+import com.system.security.services.AuthService;
 import com.system.security.services.UserDetailsImpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +26,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,11 +35,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 
-@CrossOrigin(origins = "*", maxAge = 3600)
-@RestController
+@CrossOrigin(origins = "*", allowedHeaders = "*")
+@Controller
 @RequestMapping("/api/auth")
 public class AuthController {
 	@Autowired
+	private AuthService authService;
+	/*@Autowired
 	AuthenticationManager authenticationManager;
 
 	@Autowired
@@ -51,12 +54,13 @@ public class AuthController {
 	PasswordEncoder encoder;
 
 	@Autowired
-	JwtUtils jwtUtils;
+	JwtUtils jwtUtils;*/
 
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+		return authService.loginUserService(loginRequest);
 
-		Authentication authentication = authenticationManager.authenticate(
+	/*	Authentication authentication = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -73,12 +77,14 @@ public class AuthController {
 												 userDetails.getEmail(),
 												 userDetails.getDOB(),
 												 userDetails.getSignupDate(),
-												 roles));
+												 roles));*/
 	}
 
 	@PostMapping("/signup")
-	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+	public ResponseEntity<?> registerUser(@Valid @RequestBody User registerUser) {
+		return authService.registerUserService(registerUser);
+
+	/*	if (userRepository.existsByEmail(signUpRequest.getEmail())) {
 			return ResponseEntity
 					.badRequest()
 					.body(new MessageResponse("Error: Username is already taken!"));
@@ -144,6 +150,6 @@ public class AuthController {
 		user.setRoles(roles);
 		userRepository.save(user);
 
-		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));*/
 	}
 }

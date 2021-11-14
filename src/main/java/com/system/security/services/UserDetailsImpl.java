@@ -6,10 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class UserDetailsImpl implements UserDetails {
@@ -24,39 +21,36 @@ public class UserDetailsImpl implements UserDetails {
 	@JsonIgnore
 	private String password;
 
-	private String DOB;
+	//private String DOB;
 
-	private String signupDate;
+	private boolean isBlackListed;
 
-	private String image;
+	//private String image;
 
 	private Collection<? extends GrantedAuthority> authorities;
 
-	public UserDetailsImpl(Long id, String fullname, String email, String password,String DOB,String signupDate,String image,
+	public UserDetailsImpl(Long id, String fullname, String email, String password,boolean isBlackListed,
 			Collection<? extends GrantedAuthority> authorities) {
 		this.id = id;
 		this.fullname = fullname;
 		this.email = email;
 		this.password = password;
-		this.DOB=DOB;
-		this.signupDate=signupDate;
-		this.image=image;
+		//this.DOB=DOB;
+		this.isBlackListed=isBlackListed;
+		//this.image=image;
 		this.authorities = authorities;
 	}
 
 	public static UserDetailsImpl build(User user) {
-		List<GrantedAuthority> authorities = user.getRoles().stream()
-				.map(role -> new SimpleGrantedAuthority(role.getName().name()))
-				.collect(Collectors.toList());
+		List<GrantedAuthority> authorities = Arrays.stream(user.getRole().getRole().split(","))
+				.map(SimpleGrantedAuthority::new).collect(Collectors.toList());
 
 		return new UserDetailsImpl(
 				user.getId(), 
 				user.getFullname(),
 				user.getEmail(),
 				user.getPassword(),
-				user.getDOB(),
-				user.getSignupDate(),
-				user.getImage(),
+				user.isBlacklisted(),
 				authorities);
 	}
 
@@ -73,6 +67,15 @@ public class UserDetailsImpl implements UserDetails {
 		return email;
 	}
 
+	public boolean isBlackListed() {
+		return isBlackListed;
+	}
+
+	public void setBlackListed(boolean blackListed) {
+		isBlackListed = blackListed;
+	}
+
+
 	@Override
 	public String getPassword() {
 		return password;
@@ -85,18 +88,6 @@ public class UserDetailsImpl implements UserDetails {
 
 	public String getFullname() {
 		return fullname;
-	}
-
-	public String getDOB() {
-		return DOB;
-	}
-
-	public String getSignupDate() {
-		return signupDate;
-	}
-
-	public String getImage() {
-		return image;
 	}
 
 
