@@ -2,10 +2,13 @@ package com.system.security.services;
 
 import com.system.DTO.MovieDTO;
 import com.system.models.Movie;
+import com.system.models.Quantity;
 import com.system.repository.MovieRepository;
+import com.system.repository.QuantityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +18,8 @@ public class MovieService {
 
     @Autowired
     private MovieRepository movieRepository;
+    @Autowired
+    private QuantityRepository quantityRepository;
 
     public boolean existsByTitle(String title){
         return movieRepository.existsByTitle(title);
@@ -22,10 +27,7 @@ public class MovieService {
     public boolean existsById(Long movieId){
         return movieRepository.existsById(movieId);
     }
-    public int movieCopiesAvailable(Long movieId){
-        Movie movie=movieRepository.getById(movieId);
-        return movie.getCopiesAvailable();
-    }
+
 
     //list all movies
     public List<Movie> getAllMovies(){
@@ -43,13 +45,18 @@ public class MovieService {
         try{
             Movie m=new Movie();
             m.setTitle(movieDTO.getTitle());
+            m.setStatus(movieDTO.getStatus());
             m.setWriter(movieDTO.getWriter());
-            m.setDirecter(movieDTO.getDirecter());
-            m.setCopiesAvailable(movieDTO.getCopiesAvailable());
             m.setImage(movieDTO.getImage());
             m.setR18(movieDTO.isR18());
-
+            m.setDescription(movieDTO.getDescription());
             movieRepository.save(m);
+            //set quantity
+            Movie movie=movieRepository.findByTitle(movieDTO.getTitle());
+            Quantity quantity=new Quantity();
+            quantity.setNoOfCopies(movieDTO.getNoOfCopies());
+            quantity.setMovie(movie);
+            quantityRepository.save(quantity);
             return m;
         }catch (Exception e){
             return null;
@@ -59,24 +66,29 @@ public class MovieService {
         try{
             Movie m=movieRepository.getById(movieDTO.getMovieId());
             m.setTitle(movieDTO.getTitle());
+            m.setStatus(movieDTO.getStatus());
             m.setWriter(movieDTO.getWriter());
-            m.setDirecter(movieDTO.getDirecter());
-            m.setCopiesAvailable(movieDTO.getCopiesAvailable());
             m.setImage(movieDTO.getImage());
             m.setR18(movieDTO.isR18());
-
+            m.setDescription(movieDTO.getDescription());
             movieRepository.save(m);
+            Quantity quantity=quantityRepository.findByMovieMovieId(m.getMovieId());
+            quantity.setNoOfCopies(movieDTO.getNoOfCopies());
+            quantity.setMovie(m);
+            quantityRepository.save(quantity);
             return m;
         }catch (Exception e){
             return null;
         }
     }
-    public Movie updateMovieCopies(long movieId,int copies){
+    public Quantity updateMovieQuantity(Long movieId, Integer copies){
         try{
-            Movie m=movieRepository.getById(movieId);
-            m.setCopiesAvailable(copies);
-            movieRepository.save(m);
-            return m;
+            //Movie m=movieRepository.getById(movieId);
+            Quantity q=quantityRepository.findByMovieMovieId(movieId);
+            Quantity quantity=new Quantity();
+            quantity.setNoOfCopies(copies);
+            quantityRepository.save(q);
+            return q;
         }catch (Exception e){
             return null;
         }

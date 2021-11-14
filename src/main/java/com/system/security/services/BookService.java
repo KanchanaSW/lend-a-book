@@ -2,7 +2,9 @@ package com.system.security.services;
 
 import com.system.DTO.BookDTO;
 import com.system.models.Book;
+import com.system.models.Quantity;
 import com.system.repository.BookRepository;
+import com.system.repository.QuantityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,8 @@ public class BookService {
 
     @Autowired
     private BookRepository bookRepository;
+    @Autowired
+    private QuantityRepository quantityRepository;
 
     public List<Book> get(List<Integer> ids){
         return bookRepository.findAllById(ids);
@@ -46,14 +50,23 @@ public class BookService {
             book.setTitle(bookDTO.getTitle());
             book.setAuthor(bookDTO.getAuthor());
             book.setPublisher(bookDTO.getPublisher());
-            book.setCopiesAvi(bookDTO.getCopiesAvi());
+            book.setStatus(bookDTO.getStatus());
             book.setCoverPage(bookDTO.getCoverPage());
-
+            book.setSummary(bookDTO.getSummary());
             bookRepository.save(book);
+            //add the quantity here
+            Book book1=bookRepository.findByIsbn(bookDTO.getIsbn());
+            Quantity quantity =new Quantity();
+            quantity.setNoOfCopies(bookDTO.getNoOfCopies());
+            quantity.setBook(book1);
+            //quantity.setMovie();
+            quantityRepository.save(quantity);
             return book;
 
         }catch (Exception e){
             return null;
+        }finally {
+
         }
     }
     public long countAllBooks(){
@@ -76,20 +89,30 @@ public class BookService {
     }
     public Book updateBook(BookDTO bookDTO){
         try{
-            Book book = bookRepository.getById(bookDTO.getId());
+            Book book = bookRepository.findByIsbn(bookDTO.getIsbn());
+            //book.setId(book.getId());
+            book.setIsbn(bookDTO.getIsbn());
             book.setTitle(bookDTO.getTitle());
             book.setAuthor(bookDTO.getAuthor());
             book.setPublisher(bookDTO.getPublisher());
-            book.setCopiesAvi(bookDTO.getCopiesAvi());
+            book.setStatus(bookDTO.getStatus());
             book.setCoverPage(bookDTO.getCoverPage());
+            book.setSummary(bookDTO.getSummary());
 
             bookRepository.save(book);
+            Quantity quantity =quantityRepository.findByBookId(book.getId());
+            quantity.setNoOfCopies(bookDTO.getNoOfCopies());
+            quantity.setBook(book);
+            //quantity.setMovie();
+            quantityRepository.save(quantity);
             return book;
         }catch (Exception e){
             return null;
         }
     }
     public void deleteBook(Integer id){
+        Quantity quantity =quantityRepository.findByBookId(id);
+        quantityRepository.delete(quantity);
         bookRepository.deleteById(id);
     }
 

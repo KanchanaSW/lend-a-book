@@ -23,8 +23,14 @@ public class Book {
     @NotNull
     private String publisher;
     @NotNull
-    private int copiesAvi;
+    private String status;
     private String coverPage;
+    @Column(columnDefinition = "text")
+    private String summary;
 
+    /*
+    @OneToOne(targetEntity = Quantity.class, fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false, name = "noOfCopies")
+    private Quantity quantity;*/
 
 }

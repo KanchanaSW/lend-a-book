@@ -46,9 +46,9 @@ public class AdminController {
             if (bookService.existsIsbn(newBook.getIsbn())) {
                 return ResponseEntity.badRequest().body(
                         new MessageResponse("Error : Book already exists with the same ISBN"));
-            } else if (bookService.existsTitle(newBook.getTitle())) {
+           /* } else if (bookService.existsTitle(newBook.getTitle())) {
                 return ResponseEntity.badRequest().body(
-                        new MessageResponse("Error : Book already exists with the same Title"));
+                        new MessageResponse("Error : Book already exists with the same Title"));*/
             } else {
                 bookService.addBook(newBook);
                 return ResponseEntity.ok(new MessageResponse("Success : Book added!!!"));
@@ -114,7 +114,7 @@ public class AdminController {
         }
     }
     //delete book
-    @RequestMapping(method = RequestMethod.DELETE,value = "/deleteBook/{isbn}")
+    @RequestMapping(method = RequestMethod.DELETE,value = "/deleteBook/{id}")
     public ResponseEntity<?> deleteBook(@PathVariable Integer id){
         if (bookService.existsId(id)){
             bookService.deleteBook(id);
@@ -205,12 +205,11 @@ public class AdminController {
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //---------------------------------------------Book Issue Functions***********************************************
+    //---------------------------------------------Book Reservation Functions***********************************************
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @RequestMapping(method = RequestMethod.POST,value = "/addReservation")
     public ResponseEntity<?> saveReservation(@RequestBody Reservation reservation, Authentication authentication){
         UserDetailsImpl userDetails= (UserDetailsImpl) authentication.getPrincipal();
-
         return reservationService.saveReservation(reservation,userDetails.getEmail(), reservation.getTotalAmount());
     }
     @RequestMapping(method = RequestMethod.GET,value = "/allUserReservation")
