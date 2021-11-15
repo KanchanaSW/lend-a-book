@@ -98,8 +98,8 @@ public class AdminController {
         }
     }
     //update book details here.
-    @RequestMapping(method = RequestMethod.PUT,value = "/updateBook")
-    public ResponseEntity<?> updateBook(@Valid @RequestBody BookDTO book){
+    @RequestMapping(method = RequestMethod.PUT,value = "/updateBook/{id}")
+    public ResponseEntity<?> updateBook(@Valid @PathVariable Integer id, @RequestBody BookDTO book){
         try {
             if (bookService.existsIsbn(book.getIsbn())) {
                 bookService.updateBook(book);

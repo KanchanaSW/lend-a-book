@@ -54,7 +54,7 @@ public class AuthService {
                         registerUser.getFullname(),
                         registerUser.getDOB(),
                         registerUser.getImage(),
-                        registerUser.isBlacklisted()
+                        false
                 );
 
                 Role role = roleService.getRoleByName("ROLE_USER");

@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 public class JwtResponse {
-	private String token;
+	private String accessToken;
 	private String type = "Bearer";
 	private Long id;
 	private String fullname;
@@ -21,10 +21,10 @@ public class JwtResponse {
 	private boolean isBlacklisted;
 	private String roles;
 
-	public JwtResponse(String token, Long id, String fullname, String email,
+	public JwtResponse(String accessToken, Long id, String fullname, String email,
 					   String password,
 					   boolean isBlacklisted, String role, Date expiretime) {
-		this.token=token;
+		this.accessToken=accessToken;
 		this.id=id;
 		this.fullname=fullname;
 		this.email=email;

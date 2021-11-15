@@ -26,7 +26,7 @@ public class TestController {
 	public String userAccess() {
 		return "User Content.";
 	}
-
+/*
 	@GetMapping("/bronze")
 	@PreAuthorize("hasRole('BRONZE')or hasRole('ADMIN')")
 	public String moderatorAccess() {
@@ -49,5 +49,5 @@ public class TestController {
 	@PreAuthorize("hasRole('PLATINUM')or hasRole('ADMIN')")
 	public String platinumAccess() {
 		return "Platinum Board.";
-	}
+	}*/
 }
