@@ -27,6 +27,7 @@ public class Book {
     private String coverPage;
     @Column(columnDefinition = "text")
     private String summary;
+    private Integer noOfCopies;
 
     /*
     @OneToOne(targetEntity = Quantity.class, fetch = FetchType.EAGER)

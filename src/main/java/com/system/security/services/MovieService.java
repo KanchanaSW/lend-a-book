@@ -2,13 +2,10 @@ package com.system.security.services;
 
 import com.system.DTO.MovieDTO;
 import com.system.models.Movie;
-import com.system.models.Quantity;
 import com.system.repository.MovieRepository;
-import com.system.repository.QuantityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +15,6 @@ public class MovieService {
 
     @Autowired
     private MovieRepository movieRepository;
-    @Autowired
-    private QuantityRepository quantityRepository;
 
     public boolean existsByTitle(String title){
         return movieRepository.existsByTitle(title);
@@ -35,6 +30,23 @@ public class MovieService {
         movieRepository.findAll().forEach(e->list.add(e));
         return list;
     }
+    //list all movies by title
+    public List<Movie> getAllByTitle(String title){
+        List<Movie> list=new ArrayList<>();
+       movieRepository.findAllByTitle(title).forEach(e->list.add(e));
+       return list;
+    }
+    //list all distint movies
+    public List<Movie> getAllDistintMovie(){
+        List<Movie> list=new ArrayList<>();
+        movieRepository.findAll().forEach(e-> {
+            if (!list.contains(e)) {
+                list.add(e);
+            }
+        });
+        return list;
+    }
+
     //list 18+ movies
     public List<Movie> getRRatedMovies(){
         List<Movie> list=new ArrayList<>();
@@ -46,53 +58,36 @@ public class MovieService {
             Movie m=new Movie();
             m.setTitle(movieDTO.getTitle());
             m.setStatus(movieDTO.getStatus());
-            m.setWriter(movieDTO.getWriter());
+            m.setLength(movieDTO.getLength());
             m.setImage(movieDTO.getImage());
             m.setR18(movieDTO.isR18());
             m.setDescription(movieDTO.getDescription());
+            m.setNoOfCopies(movieDTO.getNoOfCopies());
             movieRepository.save(m);
-            //set quantity
-            Movie movie=movieRepository.findByTitle(movieDTO.getTitle());
-            Quantity quantity=new Quantity();
-            quantity.setNoOfCopies(movieDTO.getNoOfCopies());
-            quantity.setMovie(movie);
-            quantityRepository.save(quantity);
+
             return m;
         }catch (Exception e){
             return null;
         }
     }
-    public Movie updateMovie(MovieDTO movieDTO){
+    public Movie updateMovie(MovieDTO movieDTO,Long movieId){
         try{
-            Movie m=movieRepository.getById(movieDTO.getMovieId());
+            Movie m=movieRepository.getById(movieId);
             m.setTitle(movieDTO.getTitle());
             m.setStatus(movieDTO.getStatus());
-            m.setWriter(movieDTO.getWriter());
+            m.setLength(movieDTO.getLength());
             m.setImage(movieDTO.getImage());
             m.setR18(movieDTO.isR18());
             m.setDescription(movieDTO.getDescription());
+            m.setNoOfCopies(movieDTO.getNoOfCopies());
             movieRepository.save(m);
-            Quantity quantity=quantityRepository.findByMovieMovieId(m.getMovieId());
-            quantity.setNoOfCopies(movieDTO.getNoOfCopies());
-            quantity.setMovie(m);
-            quantityRepository.save(quantity);
+
             return m;
         }catch (Exception e){
             return null;
         }
     }
-    public Quantity updateMovieQuantity(Long movieId, Integer copies){
-        try{
-            //Movie m=movieRepository.getById(movieId);
-            Quantity q=quantityRepository.findByMovieMovieId(movieId);
-            Quantity quantity=new Quantity();
-            quantity.setNoOfCopies(copies);
-            quantityRepository.save(q);
-            return q;
-        }catch (Exception e){
-            return null;
-        }
-    }
+
     public Movie findMovieByID(long movieId){
         Optional<Movie> movie=movieRepository.findById(movieId);
         Movie m=null;
@@ -106,6 +101,7 @@ public class MovieService {
         return movie;
     }
     public void deleteMovie(long movieId){
+
         movieRepository.deleteById(movieId);
     }
 

@@ -2,10 +2,7 @@ package com.system.models;
 
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -18,8 +15,10 @@ public class Movie {
     @NotNull
     private String title;
     private String status;
-    private String writer;
+    private String length;
     private String image;
     private boolean r18;
+    @Column(columnDefinition = "text")
     private String description;
+    private Integer noOfCopies;
 }

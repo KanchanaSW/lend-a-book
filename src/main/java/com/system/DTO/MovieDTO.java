@@ -8,7 +8,7 @@ public class MovieDTO {
     private Long movieId;
     private String title;
     private String status;
-    private String writer;
+    private String length;
     private String image;
     private boolean r18;
     private Integer noOfCopies;

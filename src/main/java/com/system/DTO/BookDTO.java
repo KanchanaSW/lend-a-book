@@ -1,6 +1,5 @@
 package com.system.DTO;
 
-import com.system.models.Quantity;
 import lombok.Data;
 
 @Data

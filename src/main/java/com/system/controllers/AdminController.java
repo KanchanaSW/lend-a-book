@@ -46,9 +46,9 @@ public class AdminController {
             if (bookService.existsIsbn(newBook.getIsbn())) {
                 return ResponseEntity.badRequest().body(
                         new MessageResponse("Error : Book already exists with the same ISBN"));
-           /* } else if (bookService.existsTitle(newBook.getTitle())) {
+           } else if (bookService.existsTitle(newBook.getTitle())) {
                 return ResponseEntity.badRequest().body(
-                        new MessageResponse("Error : Book already exists with the same Title"));*/
+                        new MessageResponse("Error : Book already exists with the same Title"));
             } else {
                 bookService.addBook(newBook);
                 return ResponseEntity.ok(new MessageResponse("Success : Book added!!!"));
@@ -177,11 +177,11 @@ public class AdminController {
         }
     }
     //update movie details here.
-    @RequestMapping(method = RequestMethod.PUT,value = "/updateMovie")
-    public ResponseEntity<?> updateMovie(@Valid @RequestBody MovieDTO movieDTO){
+    @RequestMapping(method = RequestMethod.PUT,value = "/updateMovie/{movieId}")
+    public ResponseEntity<?> updateMovie(@Valid @PathVariable long movieId, @RequestBody MovieDTO movieDTO){
         try {
-            if (movieService.existsById(movieDTO.getMovieId())) {
-                movieService.updateMovie(movieDTO);
+            if (movieService.existsById(movieId)) {
+                movieService.updateMovie(movieDTO,movieId);
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(movieDTO);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(

@@ -2,9 +2,7 @@ package com.system.security.services;
 
 import com.system.DTO.BookDTO;
 import com.system.models.Book;
-import com.system.models.Quantity;
 import com.system.repository.BookRepository;
-import com.system.repository.QuantityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +15,7 @@ public class BookService {
 
     @Autowired
     private BookRepository bookRepository;
-    @Autowired
-    private QuantityRepository quantityRepository;
+
 
     public List<Book> get(List<Integer> ids){
         return bookRepository.findAllById(ids);
@@ -29,6 +26,16 @@ public class BookService {
         bookRepository.findAll().forEach(e->list.add(e));
         return list;
     }
+    //list all distint books
+    public List<Book> getAllUniqueBooks(){
+        List<Book> list=new ArrayList<>();
+        bookRepository.findAll().forEach(e-> {
+            List<Book> l=bookRepository.findAllByTitle(e.getTitle());
+            list.add(l.get(0));
+        });
+        return list;
+    }
+
 
     public boolean existsIsbn(Long isbn){
         return bookRepository.existsByIsbn(isbn);
@@ -53,14 +60,9 @@ public class BookService {
             book.setStatus(bookDTO.getStatus());
             book.setCoverPage(bookDTO.getCoverPage());
             book.setSummary(bookDTO.getSummary());
+            book.setNoOfCopies(bookDTO.getNoOfCopies());
             bookRepository.save(book);
-            //add the quantity here
-            Book book1=bookRepository.findByIsbn(bookDTO.getIsbn());
-            Quantity quantity =new Quantity();
-            quantity.setNoOfCopies(bookDTO.getNoOfCopies());
-            quantity.setBook(book1);
-            //quantity.setMovie();
-            quantityRepository.save(quantity);
+
             return book;
 
         }catch (Exception e){
@@ -98,21 +100,17 @@ public class BookService {
             book.setStatus(bookDTO.getStatus());
             book.setCoverPage(bookDTO.getCoverPage());
             book.setSummary(bookDTO.getSummary());
+            book.setNoOfCopies(bookDTO.getNoOfCopies());
 
-            bookRepository.save(book);
-            Quantity quantity =quantityRepository.findByBookId(book.getId());
-            quantity.setNoOfCopies(bookDTO.getNoOfCopies());
-            quantity.setBook(book);
-            //quantity.setMovie();
-            quantityRepository.save(quantity);
+           bookRepository.save(book);
+
             return book;
         }catch (Exception e){
             return null;
         }
     }
     public void deleteBook(Integer id){
-        Quantity quantity =quantityRepository.findByBookId(id);
-        quantityRepository.delete(quantity);
+
         bookRepository.deleteById(id);
     }
 
