@@ -113,7 +113,9 @@ public class BookService {
 
         bookRepository.deleteById(id);
     }
-
+    public Book save(Book book) {
+        return bookRepository.save(book);
+    }
 }
 
 

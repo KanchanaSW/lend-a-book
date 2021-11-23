@@ -1,6 +1,7 @@
 package com.system.security.services;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.system.models.Subscription;
 import com.system.models.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,12 +25,13 @@ public class UserDetailsImpl implements UserDetails {
 	//private String DOB;
 
 	private boolean isBlackListed;
+	private String subType;
 
 	//private String image;
 
 	private Collection<? extends GrantedAuthority> authorities;
 
-	public UserDetailsImpl(Long id, String fullname, String email, String password,boolean isBlackListed,
+	public UserDetailsImpl(Long id, String fullname, String email, String password,boolean isBlackListed,String subType,
 			Collection<? extends GrantedAuthority> authorities) {
 		this.id = id;
 		this.fullname = fullname;
@@ -37,6 +39,7 @@ public class UserDetailsImpl implements UserDetails {
 		this.password = password;
 		//this.DOB=DOB;
 		this.isBlackListed=isBlackListed;
+		this.subType=subType;
 		//this.image=image;
 		this.authorities = authorities;
 	}
@@ -51,6 +54,7 @@ public class UserDetailsImpl implements UserDetails {
 				user.getEmail(),
 				user.getPassword(),
 				user.isBlacklisted(),
+				user.getSubscription().getType(),
 				authorities);
 	}
 
@@ -75,6 +79,13 @@ public class UserDetailsImpl implements UserDetails {
 		isBlackListed = blackListed;
 	}
 
+	public String getSubType() {
+		return subType;
+	}
+
+	public void setSubType(String subType) {
+		this.subType = subType;
+	}
 
 	@Override
 	public String getPassword() {

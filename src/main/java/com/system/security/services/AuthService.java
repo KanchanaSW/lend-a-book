@@ -1,6 +1,7 @@
 package com.system.security.services;
 
 import com.system.models.Role;
+import com.system.models.Subscription;
 import com.system.models.User;
 import com.system.payload.request.LoginRequest;
 import com.system.payload.response.JwtResponse;
@@ -29,6 +30,8 @@ public class AuthService {
     private AuthenticationManager authenticationManager;
     private PasswordEncoder passwordEncoder;
     private JwtUtils jwtUtils;
+    @Autowired
+    private SubscriptionService subscriptionService;
 
     @Autowired
     public AuthService(RoleService roleService, UserRepository userRepository, AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
@@ -48,15 +51,16 @@ public class AuthService {
 
             }else {
                 //create a new user account after the checking
+                Subscription subscription= subscriptionService.get("Free");
                 User user = new User(
                         registerUser.getEmail(),
                         passwordEncoder.encode(registerUser.getPassword()),
                         registerUser.getFullname(),
                         registerUser.getDOB(),
                         registerUser.getImage(),
-                        false
+                        false,
+                        subscription
                 );
-
                 Role role = roleService.getRoleByName("ROLE_USER");
                 user.setRole(role);
                 userRepository.save(user);
@@ -83,15 +87,18 @@ public class AuthService {
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(item -> item.getAuthority())
                     .collect(Collectors.toList());
+            String subs=userDetails.getSubType();
             return ResponseEntity.ok(new JwtResponse(jwt,
                     userDetails.getId(),
                     userDetails.getFullname(),
                     userDetails.getEmail(),
                     userDetails.getPassword(),
                     userDetails.isBlackListed(),
-                    roles.get(0), expiretime));
+                    roles.get(0), expiretime,
+                    subs
+                    ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MessageResponse(("Error")));
+            return ResponseEntity.badRequest().body(new MessageResponse(("Error"+e)));
         }
     }
 }

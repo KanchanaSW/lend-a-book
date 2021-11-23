@@ -37,16 +37,17 @@ public class User {
 	private Role role;
 
 	@ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-	@JoinColumn(name = "subscription", referencedColumnName = "type")
+	@JoinColumn(name = "subscription", referencedColumnName = "subscriptionId")
 	private Subscription subscription;
 
-	public User(String email, String password, String fullname, String DOB, String image, boolean isBlacklisted) {
+	public User(String email, String password, String fullname, String DOB, String image, boolean isBlacklisted,Subscription subscription) {
 		this.email=email;
 		this.password=password;
 		this.fullname=fullname;
 		this.DOB=DOB;
 		this.image=image;
 		this.isBlacklisted=isBlacklisted;
+		this.subscription=subscription;
 	}
 
 	/*
