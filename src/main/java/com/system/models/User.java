@@ -36,6 +36,10 @@ public class User {
 	@JoinColumn(name = "role", referencedColumnName = "roleId")
 	private Role role;
 
+	@ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+	@JoinColumn(name = "subscription", referencedColumnName = "type")
+	private Subscription subscription;
+
 	public User(String email, String password, String fullname, String DOB, String image, boolean isBlacklisted) {
 		this.email=email;
 		this.password=password;
