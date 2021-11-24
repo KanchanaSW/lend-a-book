@@ -1,11 +1,13 @@
 package com.system.security.services;
 
 import com.system.models.OTP;
+import com.system.models.Subscription;
 import com.system.models.User;
 import com.system.repository.OTPRepository;
 import com.system.repository.RoleRepository;
 import com.system.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +22,19 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private OTPRepository otpRepository;
+    @Autowired
+    private SubscriptionService subscriptionService;
 
 
+    public User updateSubscription(Authentication authentication,Long subscriptionId){
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long id= userDetails.getId();
+        Optional<User> user = userRepository.findById(id);
+        User u=user.get();
+        Subscription subscription= subscriptionService.getSubById(subscriptionId);
+        u.setSubscription(subscription);
+        return userRepository.save(u);
+    }
 
     public User updateUser(User userDTO){
         Optional<User> user = userRepository.findById(userDTO.getId());
