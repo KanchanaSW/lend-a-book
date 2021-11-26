@@ -1,6 +1,7 @@
 package com.system.security.services;
 
 import com.system.models.Book;
+import com.system.models.Issue;
 import com.system.models.IssuedBook;
 import com.system.repository.IssuedBookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,4 +39,23 @@ public class IssuedBookService {
         issuedBook.setReturned( 0 );
         return issuedBookRepository.save(issuedBook);
     }
+    public Long countBooksByIssueNotReturned(Issue issue){
+        return issuedBookRepository.countIssuedBooksByIssueAndReturned(issue,0);
+    }
+
+    public Long findByIssueAndNotReturned(Issue issues){
+        return issuedBookRepository.findByReturnedAndIssue(0,issues);
+    }
+
+   /* public Long counNotReturnedIssuedBooks(Long issuedBookId){
+        return issuedBookRepository.countByIssuedBookIdAndReturned(issuedBookId,0);
+    }*/
+  /*  public IssuedBook findBooksByNotReturnIssue(Issue issue){
+        return issuedBookRepository.findByReturnedAndIssue(0,issue);
+    }*/
+ /*public IssuedBook findByIssueNotRet(Issue issue){
+        return issuedBookRepository.findByIssueAndReturned(issue,0);
+    }*/
+
+
 }

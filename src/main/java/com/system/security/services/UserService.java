@@ -26,9 +26,8 @@ public class UserService {
     private SubscriptionService subscriptionService;
 
 
-    public User updateSubscription(Authentication authentication,Long subscriptionId){
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Long id= userDetails.getId();
+    public User updateSubscription(Long id,Long subscriptionId){
+
         Optional<User> user = userRepository.findById(id);
         User u=user.get();
         Subscription subscription= subscriptionService.getSubById(subscriptionId);

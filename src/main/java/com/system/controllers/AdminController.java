@@ -11,15 +11,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-@CrossOrigin(origins = "*",allowedHeaders = "*")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/admin")
@@ -39,7 +37,7 @@ public class AdminController {
     @Autowired
     private UserService userService;
     @Autowired
-    private UserRepository userRepository;
+    private SubscriptionService subscriptionService;
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -258,84 +256,135 @@ public class AdminController {
 
 
     @RequestMapping(value = "/saveIssue")
-    public ResponseEntity<?> saveIssue(@RequestBody Issue issue, Authentication authentication) {
+    public ResponseEntity<?> saveIssue(@RequestBody Issue issue) {
         try {
-            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
             String email = userDetails.getEmail();
-          //  System.out.println(email);
             User user = userService.directUserType(email);//get user
             Integer[] list;
             list = issue.getList();
+            ///////////////////////////////////////
+            Subscription mySubscription = subscriptionService.getSubById(user.getSubscription().getSubscriptionId());
+            Integer subBooks = mySubscription.getNoOfBooks();
+            Integer dueraBooks = mySubscription.getDurationBooks();
+            double chargeBookDay = mySubscription.getChargesBooks();
 
-            Issue issue1 = new Issue();
-            issue1.setUser(user);//user added
-            issue1 = issueService.addNew(issue1);
-           // System.out.println(books.size());
-            for (int l = 0; l < list.length; l++) {
-                Book book = bookService.findBook(list[l]);
-                if (book.getStatus().equals("Available")) {
-                    Integer copies = book.getNoOfCopies();
-                    book.setNoOfCopies(copies - 1);
-                    book = bookService.save(book);
+            Long userIssueCount = issueService.getCountByUser(user);
+            List<Issue> userIssues = issueService.findBynotReturUser(user);
+            System.out.println(userIssues.size());
 
-                    IssuedBook ib = new IssuedBook();
-                    ib.setBook(book);
-                    ib.setIssue(issue1);
-                    issuedBookService.addNew(ib);
-                } else {
-                    return ResponseEntity.badRequest().body(new MessageResponse("book is un-available"));
-                }
+            Long ibCount = 0L;
+            for (int x = 0; x < userIssues.size(); x++) {
+                ibCount += Math.toIntExact(issuedBookService.countBooksByIssueNotReturned(userIssues.get(x)));
             }
-             return ResponseEntity.ok().body(new MessageResponse("Success"));
+            System.out.println("Total=>"+ibCount);
+            if (ibCount <= subBooks && (list.length+ibCount) <= subBooks) {
+                // can issue more Books
+                //
+                Issue issue1 = new Issue();
+                issue1.setUser(user);//user added
+                issue1 = issueService.addNew(issue1);
+                // System.out.println(books.size());
+                for (int l = 0; l < list.length; l++) {
+                    Book book = bookService.findBook(list[l]);
+                    if (book.getStatus().equals("Available")) {
+                        Integer copies = book.getNoOfCopies();
+                        book.setNoOfCopies(copies - 1);
+                        book = bookService.save(book);
+
+                        IssuedBook ib = new IssuedBook();
+                        ib.setBook(book);
+                        ib.setIssue(issue1);
+                        issuedBookService.addNew(ib);
+                    } else {
+                        return ResponseEntity.badRequest().body(new MessageResponse("book is un-available"));
+                    }
+                }
+                //
+
+                return ResponseEntity.ok().body(new MessageResponse("Success =>"+ibCount));
+            } else {
+                return ResponseEntity.ok().body(new MessageResponse("Number of books for subscription is over"));
+            }
+
+
+            ////////////////////////////////////////
+            /*
+
+              Integer[] list;
+                list = issue.getList();
+
+                Issue issue1 = new Issue();
+                issue1.setUser(user);//user added
+                issue1 = issueService.addNew(issue1);
+                // System.out.println(books.size());
+                for (int l = 0; l < list.length; l++) {
+                    Book book = bookService.findBook(list[l]);
+                    if (book.getStatus().equals("Available")) {
+                        Integer copies = book.getNoOfCopies();
+                        book.setNoOfCopies(copies - 1);
+                        book = bookService.save(book);
+
+                        IssuedBook ib = new IssuedBook();
+                        ib.setBook(book);
+                        ib.setIssue(issue1);
+                        issuedBookService.addNew(ib);
+                    } else {
+                        return ResponseEntity.badRequest().body(new MessageResponse("book is un-available"));
+                    }
+                }
+
+             */
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MessageResponse("error occcured" + e));
         }
     }
 
-    @RequestMapping(value = "/returnAllBooks/{issueId}",method = RequestMethod.GET)
-    public ResponseEntity<?> returnAllBooks(@PathVariable Long issueId){
-        Issue issue=issueService.get(issueId);
-        if(issue != null){
-            List<IssuedBook> issuedBooks=issue.getIssuedBooks();
-            for (int k=0;k<issuedBooks.size();k++){
-                IssuedBook ib=issuedBooks.get(k);
+    @RequestMapping(value = "/returnAllBooks/{issueId}", method = RequestMethod.GET)
+    public ResponseEntity<?> returnAllBooks(@PathVariable Long issueId) {
+        Issue issue = issueService.get(issueId);
+        if (issue != null) {
+            List<IssuedBook> issuedBooks = issue.getIssuedBooks();
+            for (int k = 0; k < issuedBooks.size(); k++) {
+                IssuedBook ib = issuedBooks.get(k);
                 ib.setReturned(1);
                 issuedBookService.save(ib);
 
-                Book book=ib.getBook();
+                Book book = ib.getBook();
                 Integer copies = book.getNoOfCopies();
-                book.setNoOfCopies(copies+1);
+                book.setNoOfCopies(copies + 1);
                 bookService.save(book);
             }
             issue.setReturned(1);
             issueService.save(issue);
             return ResponseEntity.ok().body(new MessageResponse("successfull"));
-        }else {
+        } else {
             return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
         }
     }
 
     @RequestMapping(value = "/returnBook/{issueId}/{id}")
-    public ResponseEntity<?> returnBook(@PathVariable Long issueId,@PathVariable Integer id){
-        Issue issue=issueService.get(issueId);
-        if(issue != null){
-            List<IssuedBook> issuedBooks=issue.getIssuedBooks();
+    public ResponseEntity<?> returnBook(@PathVariable Long issueId, @PathVariable Integer id) {
+        Issue issue = issueService.get(issueId);
+        if (issue != null) {
+            List<IssuedBook> issuedBooks = issue.getIssuedBooks();
 
-            for (int k=0;k<issuedBooks.size();k++){
-                IssuedBook ib=issuedBooks.get(k);
+            for (int k = 0; k < issuedBooks.size(); k++) {
+                IssuedBook ib = issuedBooks.get(k);
                 if (ib.getBook().getId().equals(id))
                     ib.setReturned(1);
-                    issuedBookService.save(ib);
+                issuedBookService.save(ib);
 
-                    Book book = ib.getBook();
-                    Integer copies = book.getNoOfCopies();
-                    book.setNoOfCopies(copies + 1);
-                    bookService.save(book);
+                Book book = ib.getBook();
+                Integer copies = book.getNoOfCopies();
+                book.setNoOfCopies(copies + 1);
+                bookService.save(book);
                 return ResponseEntity.ok().body(new MessageResponse("successfull"));
-                }
+            }
             return ResponseEntity.ok().body(new MessageResponse("success"));
-            } else {
+        } else {
             return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
         }
     }

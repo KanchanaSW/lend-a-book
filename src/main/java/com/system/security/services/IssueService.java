@@ -3,6 +3,7 @@ package com.system.security.services;
 import com.system.models.Issue;
 import com.system.models.User;
 import com.system.repository.IssueRepository;
+import com.system.repository.IssuedBookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,8 @@ public class IssueService {
     private IssueRepository issueRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private IssuedBookService issuedBookService;
 
     @Autowired
     public IssueService(IssueRepository issueRepository) {
@@ -30,12 +33,12 @@ public class IssueService {
     }
 
     public List<Issue> getAllUnreturned() {
-        return issueRepository.findByReturned( 0 );
+        return issueRepository.findByReturned(0);
     }
 
     public Issue addNew(Issue issue) {
-        issue.setIssueDate( new Date() );
-        issue.setReturned( 0 );
+        issue.setIssueDate(new Date());
+        issue.setReturned(0);
         return issueRepository.save(issue);
     }
 
@@ -46,9 +49,19 @@ public class IssueService {
     public Long getCountByUser(User user) {
         return issueRepository.countByUserAndReturned(user, 0);
     }
-    
-    public Long testId(Long id){
-        User user= userService.findUser(id);
-                return user.getId();
+
+    public List<Issue> findBynotReturUser(User user) {
+        return issueRepository.findByReturnedAndUser(0, user);
     }
+
 }
+
+
+
+
+
+
+
+
+
+
