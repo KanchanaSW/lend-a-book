@@ -1,12 +1,14 @@
 package com.system.security.services;
 
-import com.system.models.Issue;
-import com.system.models.User;
+import com.system.models.*;
+import com.system.payload.response.MessageResponse;
 import com.system.repository.IssueRepository;
 import com.system.repository.IssuedBookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -18,6 +20,10 @@ public class IssueService {
     private UserService userService;
     @Autowired
     private IssuedBookService issuedBookService;
+    @Autowired
+    private SubscriptionService subscriptionService;
+    @Autowired
+    private BookService bookService;
 
     @Autowired
     public IssueService(IssueRepository issueRepository) {
@@ -37,8 +43,6 @@ public class IssueService {
     }
 
     public Issue addNew(Issue issue) {
-        issue.setIssueDate(new Date());
-        issue.setReturned(0);
         return issueRepository.save(issue);
     }
 
@@ -52,6 +56,80 @@ public class IssueService {
 
     public List<Issue> findBynotReturUser(User user) {
         return issueRepository.findByReturnedAndUser(0, user);
+    }
+    public ResponseEntity<?> addSingleIssue(String email,Issue issue) {
+        try {
+            User user = userService.directUserType(email);//get user
+            Integer[] list;
+            list = issue.getList();
+            Subscription mySubscription = subscriptionService.getSubById(user.getSubscription().getSubscriptionId());
+            Integer subBooks = mySubscription.getNoOfBooks();
+            Integer subDurationB = mySubscription.getDurationBooks() * 7;
+            double subBCharge = mySubscription.getChargesBooks();
+            double subOverDueCharges = mySubscription.getOverDueCharges();
+            Long userIssueCount = getCountByUser(user);
+            List<Issue> userIssues = findBynotReturUser(user);
+            Date currentDate;
+            Date currentDatePlusFuture ;
+            if (issue.getIssueDate()==null){
+                currentDate= new Date();
+                // convert date to calendar
+                Calendar c = Calendar.getInstance();
+                c.setTime(currentDate);
+                c.add(Calendar.DATE, subDurationB); //change date to future date
+                // convert calendar to date
+                currentDatePlusFuture = c.getTime();
+            }else{
+                currentDate=issue.getIssueDate();
+                // convert date to calendar
+                Calendar c = Calendar.getInstance();
+                c.setTime(currentDate);
+                c.add(Calendar.DATE, subDurationB); //change date to future date
+                // convert calendar to date
+                currentDatePlusFuture = c.getTime();
+            }
+
+            Long ibCount = 0L;
+            for (int x = 0; x < userIssues.size(); x++) {
+                ibCount += Math.toIntExact(issuedBookService.countBooksByIssueNotReturned(userIssues.get(x)));
+            }
+            System.out.println("Total=>" + ibCount);
+            if (ibCount <= subBooks && (list.length + ibCount) <= subBooks) {
+                // can issue more Books
+                //
+                for (int l = 0; l < list.length; l++) {
+                    Book book = bookService.findBook(list[l]);
+                    if (book.getStatus().equals("Available")) {
+                        Issue issue1 = new Issue();
+                        issue1.setUser(user);//user added
+                        issue1.setIssueDate(currentDate);
+                        issue1.setReturned(0);
+                        issue1.setExpectedReturnDate(currentDatePlusFuture);
+                        issue1.setCharges(subBCharge);
+                        issue1 = issueRepository.save(issue1);
+
+                        Integer copies = book.getNoOfCopies();
+                        book.setNoOfCopies(copies - 1);
+                        book = bookService.save(book);
+
+                        IssuedBook ib = new IssuedBook();
+                        ib.setBook(book);
+                        ib.setIssue(issue1);
+                        issuedBookService.addNew(ib);
+                    } else {
+                        return ResponseEntity.badRequest().body(new MessageResponse("book is un-available"));
+                    }
+                }
+                //
+
+                return ResponseEntity.ok().body(new MessageResponse("Success "));
+            } else {
+                return ResponseEntity.ok().body(new MessageResponse("Number of books for subscription is over"));
+            }
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body("error");
+        }
     }
 
 }

@@ -18,8 +18,10 @@ public class Issue {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long issueId;
     private Date issueDate;
-    private String notes;
+    private double charges;
+    private double overDueCharges;
     private Date expectedReturnDate;
+    private Date extendReturnDate;
     private Integer returned;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
