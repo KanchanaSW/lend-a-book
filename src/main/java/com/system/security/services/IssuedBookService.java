@@ -27,6 +27,10 @@ public class IssuedBookService {
         return issuedBookRepository.findById(id).get();
     }
 
+    public Long getTheId(IssuedBook ib){
+        return issuedBookRepository.findById(ib.getIssuedBookId()).get().getIssuedBookId();
+    }
+
     public Long getCountByBook(Book book) {
         return issuedBookRepository.countByBookAndReturned(book, 0);
     }
@@ -42,10 +46,21 @@ public class IssuedBookService {
     public Long countBooksByIssueNotReturned(Issue issue){
         return issuedBookRepository.countIssuedBooksByIssueAndReturned(issue,0);
     }
-
-    public Long findByIssueAndNotReturned(Issue issues){
-        return issuedBookRepository.findByReturnedAndIssue(0,issues);
+    public List<IssuedBook> findIssuedBooksForUserIssues(List<Long> ids){
+        return issuedBookRepository.findAllById(ids);
     }
+    public Long issuedBookId(Issue issue){
+        return issuedBookRepository.findByReturnedAndIssue(0,issue).getIssuedBookId();
+    }
+    public List<IssuedBook> findIssuedBooksBYissueNotReturned(Issue issue){
+        List<IssuedBook> ibs = issuedBookRepository.findByIssueAndReturned(issue, 0);
+        return ibs;
+    }
+    public List<IssuedBook> findIssuedBooksBYissueR(Issue issue){
+        List<IssuedBook> ibs = issuedBookRepository.findByIssueAndReturned(issue, 1);
+        return ibs;
+    }
+
 
    /* public Long counNotReturnedIssuedBooks(Long issuedBookId){
         return issuedBookRepository.countByIssuedBookIdAndReturned(issuedBookId,0);

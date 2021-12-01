@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -24,6 +25,9 @@ public class IssuedBook {
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinColumn(name = "issue", referencedColumnName = "issueId")
-    @JsonIgnore
     private Issue issue;
+
+    private Date startDate;
+    private Date endDate;
+    private double amount;
 }

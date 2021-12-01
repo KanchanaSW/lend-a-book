@@ -255,21 +255,26 @@ public class AdminController {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////        Issue Controller         ////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
+   @RequestMapping(value = "/reserveBook/{id}")
+   public ResponseEntity<?> saveReserveBook(@PathVariable Long id){
+        return null;
+   }
+
     @RequestMapping(value = "/addNewIssue")
-    public ResponseEntity<?> saveSingleIssue(@RequestBody Issue issue){
+    public ResponseEntity<?> saveSingleIssue(@RequestBody Issue issue) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
         String email = userDetails.getEmail();
 
-        return issueService.addSingleIssue(email,issue);
+        return issueService.addSingleIssue(email, issue);
     }
-    @RequestMapping(value = "/extendIssue/{issueId}",method = RequestMethod.PUT)
-    public ResponseEntity<?> extendBookIssue(@PathVariable Long issueId,@RequestBody Issue issue){
+
+    @RequestMapping(value = "/extendIssue/{issueId}", method = RequestMethod.PUT)
+    public ResponseEntity<?> extendBookIssue(@PathVariable Long issueId, @RequestBody Issue issue) {
+        Date extendDate=issue.getExtendReturnDate();
         Issue issue1 = issueService.get(issueId);
         if (issue1 != null) {
-            issue1.setExtendReturnDate(issue.getExtendReturnDate());
-            issueService.save(issue1);
-            return ResponseEntity.ok().body(new MessageResponse("successfull"));
+            return issueService.extendReturn(issue1,extendDate);
         } else {
             return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
         }
@@ -298,11 +303,93 @@ public class AdminController {
         }
     }
 
-   // **********************************************************
-    //********************************************************
-    //**************************************************
-    //temp
+    @RequestMapping(value = "/returnABook/{issuedBookId}", method = RequestMethod.GET)
+    public ResponseEntity<?> returnABook(@PathVariable Long issuedBookId){
+        IssuedBook issuedBook= issuedBookService.get(issuedBookId);
+        if (issuedBook != null){
+            //set the book returned
+            issuedBook.setReturned(1);
+            issuedBookService.save(issuedBook);
 
+            Book book = issuedBook.getBook();
+            Integer copies=book.getNoOfCopies();
+            book.setNoOfCopies(copies + 1);
+            bookService.save(book);
+            return ResponseEntity.ok().body(new MessageResponse("successfull"));
+        }else {
+            return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
+        }
+    }
+
+    @RequestMapping(value = "/viewMyIssues", method = RequestMethod.GET)
+    public ResponseEntity<?> viewMyIssuedBooks() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+            String email = userDetails.getEmail();
+            User user = userService.directUserType(email);//get user
+            List<Issue> userIssues = issueService.findBynotReturUser(user);
+            /*
+            List<Long> issuedBookIds = new ArrayList<Long>();
+            for (int k = 0; k < userIssues.size(); k++) {
+                issuedBookIds.add(issuedBookService.issuedBookId(userIssues.get(k)));
+            }
+            List<IssuedBook> ibList= issuedBookService.findIssuedBooksForUserIssues(issuedBookIds);
+            */
+            return ResponseEntity.ok().body(userIssues);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error");
+        }
+
+    }
+
+    @RequestMapping(value = "/viewMyReturnedIssues", method = RequestMethod.GET)
+    public ResponseEntity<?> viewMyReturnedIssuedBooks() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+            String email = userDetails.getEmail();
+            User user = userService.directUserType(email);//get user
+            List<Issue> userIssues = issueService.findByReturnedUser(user);
+            /*
+            List<Long> issuedBookIds = new ArrayList<Long>();
+            for (int k = 0; k < userIssues.size(); k++) {
+                issuedBookIds.add(issuedBookService.issuedBookId(userIssues.get(k)));
+            }
+            List<IssuedBook> ibList= issuedBookService.findIssuedBooksForUserIssues(issuedBookIds);
+            */
+            return ResponseEntity.ok().body(userIssues);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error");
+        }
+
+    }
+
+    @RequestMapping(value = "/viewIssuedBooks/{issueId}", method = RequestMethod.GET)
+    public ResponseEntity<?> viewIssuedBOOKS(@PathVariable Long issueId){
+       try{
+           Issue issue=issueService.get(issueId);
+           List<IssuedBook> ibs= issuedBookService.findIssuedBooksBYissueNotReturned(issue);
+           return ResponseEntity.ok().body(ibs);
+       }catch (Exception e){
+           return ResponseEntity.badRequest().body("Error"+e);
+       }
+    }
+
+    @RequestMapping(value = "/viewReturnedIssuedBooks/{issueId}", method = RequestMethod.GET)
+    public ResponseEntity<?> viewReturnIssuedBOOKS(@PathVariable Long issueId){
+        try{
+            Issue issue=issueService.get(issueId);
+            List<IssuedBook> ibs= issuedBookService.findIssuedBooksBYissueR(issue);
+            return ResponseEntity.ok().body(ibs);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body("Error"+e);
+        }
+    }
+
+
+    //temp
+/*
     @RequestMapping(value = "/saveIssue")
     public ResponseEntity<?> saveIssue(@RequestBody Issue issue) {
         final DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -318,7 +405,7 @@ public class AdminController {
             Integer subBooks = mySubscription.getNoOfBooks();
             Integer subDurationB = mySubscription.getDurationBooks() * 7;
             double subBCharge = mySubscription.getChargesBooks();
-            double subOverDueCharges=mySubscription.getOverDueCharges();
+            double subOverDueCharges = mySubscription.getOverDueCharges();
 
             Long userIssueCount = issueService.getCountByUser(user);
             List<Issue> userIssues = issueService.findBynotReturUser(user);
@@ -337,8 +424,8 @@ public class AdminController {
             for (int x = 0; x < userIssues.size(); x++) {
                 ibCount += Math.toIntExact(issuedBookService.countBooksByIssueNotReturned(userIssues.get(x)));
             }
-            System.out.println("Total=>"+ibCount);
-            if (ibCount <= subBooks && (list.length+ibCount) <= subBooks) {
+            System.out.println("Total=>" + ibCount);
+            if (ibCount <= subBooks && (list.length + ibCount) <= subBooks) {
                 // can issue more Books
                 //
                 Issue issue1 = new Issue();
@@ -370,32 +457,7 @@ public class AdminController {
                 return ResponseEntity.ok().body(new MessageResponse("Number of books for subscription is over"));
             }
             ////////////////////////////////////////
-            /*
 
-              Integer[] list;
-                list = issue.getList();
-
-                Issue issue1 = new Issue();
-                issue1.setUser(user);//user added
-                issue1 = issueService.addNew(issue1);
-                // System.out.println(books.size());
-                for (int l = 0; l < list.length; l++) {
-                    Book book = bookService.findBook(list[l]);
-                    if (book.getStatus().equals("Available")) {
-                        Integer copies = book.getNoOfCopies();
-                        book.setNoOfCopies(copies - 1);
-                        book = bookService.save(book);
-
-                        IssuedBook ib = new IssuedBook();
-                        ib.setBook(book);
-                        ib.setIssue(issue1);
-                        issuedBookService.addNew(ib);
-                    } else {
-                        return ResponseEntity.badRequest().body(new MessageResponse("book is un-available"));
-                    }
-                }
-
-             */
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MessageResponse("error occcured" + e));
@@ -427,47 +489,9 @@ public class AdminController {
         }
     }
 
-    /*
-    @RequestMapping(value = "/returnSelectedBooks/{issueId}")
-    public ResponseEntity<?> returnSelectedBooks(@PathVariable Long issueId,@RequestBody Issue issue){
-        Issue issue1=issueService.get(issueId);
-        Integer[] list;
-        list = issue.getList();
-        List<Integer> bookList = new ArrayList<>();
-        try {
-            for (int k = 0; k < list.length; k++) {
-                bookList.add(list[k]);
-            }
-        } catch (NumberFormatException ex) {
-            ex.printStackTrace();
-            return ResponseEntity.badRequest().body(new MessageResponse("error"));
-        }
-
-        List<Book> books = bookService.get(bookList);//books
-
-        if(issue1 != null){
-            List<IssuedBook> issuedBooks=issue.getIssuedBooks();
-            for (int k=0;k<issuedBooks.size();k++) {
-                IssuedBook ib = issuedBooks.get(k);
-                if (books.contains(ib.getIssuedBookId())) {
-                    ib.setReturned(1);
-                    issuedBookService.save(ib);
-
-                    Book book = ib.getBook();
-                    Integer copies = book.getNoOfCopies();
-                    book.setNoOfCopies(copies + 1);
-                    bookService.save(book);
-                }
-            }
-            return ResponseEntity.ok().body(new MessageResponse("successfull"));
-        }else {
-            return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
-        }
-    }
-*/
     //View all issued books
 
 
     // view my issued books - user functions
-
+*/
 }

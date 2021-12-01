@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -24,6 +26,8 @@ public class IssueService {
     private SubscriptionService subscriptionService;
     @Autowired
     private BookService bookService;
+    @Autowired
+    private IssuedBookRepository issuedBookRepository;
 
     @Autowired
     public IssueService(IssueRepository issueRepository) {
@@ -37,6 +41,8 @@ public class IssueService {
     public Issue get(Long issueId) {
         return issueRepository.findById(issueId).get();
     }
+
+
 
     public List<Issue> getAllUnreturned() {
         return issueRepository.findByReturned(0);
@@ -57,6 +63,52 @@ public class IssueService {
     public List<Issue> findBynotReturUser(User user) {
         return issueRepository.findByReturnedAndUser(0, user);
     }
+    public List<Issue> findByReturnedUser(User user) {
+        return issueRepository.findByReturnedAndUser(1, user);
+    }
+
+    public ResponseEntity<?> extendReturn(Issue issue,Date eDate){
+        try {
+            Date expectedRDate = issue.getExpectedReturnDate();
+            double presentCharges = issue.getCharges();
+            long days_difference = calculateLendingDays(expectedRDate, eDate);
+            User user = issue.getUser();
+            Subscription mySubscription = subscriptionService.getSubById(user.getSubscription().getSubscriptionId());
+            // Integer subBooks = mySubscription.getNoOfBooks();
+           // Integer subDurationB = mySubscription.getDurationBooks() * 7;
+            double subBCharge = mySubscription.getChargesBooks();
+            double subOverDueCharges = mySubscription.getOverDueCharges();
+
+            long booksCountNR = issuedBookService.countBooksByIssueNotReturned(issue);
+            System.out.println(booksCountNR);
+            double lendingChargePerBook = (days_difference) * subBCharge;
+            double futureCharges = (lendingChargePerBook * booksCountNR);
+            issue.setExtendReturnDate(eDate);
+            issue.setCharges(presentCharges + futureCharges);
+            issueRepository.save(issue);
+            List<IssuedBook> ibs = issuedBookRepository.findByIssueAndReturned(issue, 0);
+            System.out.println(ibs.size());
+      /*  List<Long> issuedBookIds = new ArrayList<Long>();
+
+        for (int k = 0; k < ibs.size(); k++) {
+            issuedBookIds.add(issuedBookService.getTheId(ibs.get(k)));
+        }
+        List<IssuedBook> ibList= issuedBookService.findIssuedBooksForUserIssues(issuedBookIds);*/
+
+            for (int l = 0; l < ibs.size(); l++) {
+                IssuedBook ib = issuedBookService.get(ibs.get(l).getIssuedBookId());
+                double presentAmount = ib.getAmount();
+                ib.setStartDate(expectedRDate);
+                ib.setEndDate(eDate);
+                ib.setAmount(presentAmount + (lendingChargePerBook * days_difference));
+                issuedBookService.save(ib);
+            }
+            return ResponseEntity.ok().body(new MessageResponse("Success "));
+        }catch (Exception ex){
+            return ResponseEntity.badRequest().body(new MessageResponse("Error "));
+        }
+    }
+
     public ResponseEntity<?> addSingleIssue(String email,Issue issue) {
         try {
             User user = userService.directUserType(email);//get user
@@ -69,6 +121,7 @@ public class IssueService {
             double subOverDueCharges = mySubscription.getOverDueCharges();
             Long userIssueCount = getCountByUser(user);
             List<Issue> userIssues = findBynotReturUser(user);
+            //set days
             Date currentDate;
             Date currentDatePlusFuture ;
             if (issue.getIssueDate()==null){
@@ -81,14 +134,11 @@ public class IssueService {
                 currentDatePlusFuture = c.getTime();
             }else{
                 currentDate=issue.getIssueDate();
-                // convert date to calendar
-                Calendar c = Calendar.getInstance();
-                c.setTime(currentDate);
-                c.add(Calendar.DATE, subDurationB); //change date to future date
-                // convert calendar to date
-                currentDatePlusFuture = c.getTime();
+                currentDatePlusFuture=issue.getExpectedReturnDate();
             }
-
+            //calculate lending days
+            long days_difference=calculateLendingDays(currentDate,currentDatePlusFuture);
+            double lendingChargePerBook=(days_difference)*subBCharge;
             Long ibCount = 0L;
             for (int x = 0; x < userIssues.size(); x++) {
                 ibCount += Math.toIntExact(issuedBookService.countBooksByIssueNotReturned(userIssues.get(x)));
@@ -97,17 +147,16 @@ public class IssueService {
             if (ibCount <= subBooks && (list.length + ibCount) <= subBooks) {
                 // can issue more Books
                 //
+                Issue issue1 = new Issue();
+                issue1.setUser(user);//user added
+                issue1.setIssueDate(currentDate);
+                issue1.setReturned(0);
+                issue1.setExpectedReturnDate(currentDatePlusFuture);
+                issue1.setCharges(lendingChargePerBook * list.length);
+                issue1 = issueRepository.save(issue1);
                 for (int l = 0; l < list.length; l++) {
                     Book book = bookService.findBook(list[l]);
                     if (book.getStatus().equals("Available")) {
-                        Issue issue1 = new Issue();
-                        issue1.setUser(user);//user added
-                        issue1.setIssueDate(currentDate);
-                        issue1.setReturned(0);
-                        issue1.setExpectedReturnDate(currentDatePlusFuture);
-                        issue1.setCharges(subBCharge);
-                        issue1 = issueRepository.save(issue1);
-
                         Integer copies = book.getNoOfCopies();
                         book.setNoOfCopies(copies - 1);
                         book = bookService.save(book);
@@ -115,13 +164,15 @@ public class IssueService {
                         IssuedBook ib = new IssuedBook();
                         ib.setBook(book);
                         ib.setIssue(issue1);
+                        ib.setStartDate(currentDate);
+                        ib.setEndDate(currentDatePlusFuture);
+                        ib.setAmount(lendingChargePerBook);
                         issuedBookService.addNew(ib);
                     } else {
                         return ResponseEntity.badRequest().body(new MessageResponse("book is un-available"));
                     }
                 }
                 //
-
                 return ResponseEntity.ok().body(new MessageResponse("Success "));
             } else {
                 return ResponseEntity.ok().body(new MessageResponse("Number of books for subscription is over"));
@@ -130,6 +181,13 @@ public class IssueService {
         catch (Exception e){
             return ResponseEntity.badRequest().body("error");
         }
+    }
+
+    public long calculateLendingDays(Date currentDate,Date currentDatePlusFuture){
+        long time_difference =currentDatePlusFuture.getTime() - currentDate.getTime();
+        // Calucalte time difference in days
+        long days_difference = (time_difference / (1000*60*60*24)) % 365;
+        return days_difference;
     }
 
 }
