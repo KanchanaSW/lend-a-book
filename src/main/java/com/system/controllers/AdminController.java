@@ -29,17 +29,14 @@ public class AdminController {
     @Autowired
     private MovieService movieService;
     @Autowired
-    private ReservationService reservationService;
-    @Autowired
     private IssueService issueService;
     @Autowired
     private IssuedBookService issuedBookService;
     @Autowired
-    private UserDetailsServiceImpl userDetailsService;
-    @Autowired
     private UserService userService;
     @Autowired
-    private SubscriptionService subscriptionService;
+    private ReserveTempService reserveTempService;
+
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,45 +217,52 @@ public class AdminController {
         }
     }
 
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //---------------------------------------------Book Reservation Functions***********************************************
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    @RequestMapping(method = RequestMethod.POST, value = "/addReservation")
-    public ResponseEntity<?> saveReservation(@RequestBody Reservation reservation, Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        return reservationService.saveReservation(reservation, userDetails.getEmail(), reservation.getTotalAmount());
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////   Reserve Controller     /////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @RequestMapping(value = "/reserve")
+    public ResponseEntity<?> saveReserve(@RequestBody ReserveTemp reserveTemp){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        Long userId= userDetails.getId();
+        try{
+            ReserveTemp rt=new ReserveTemp();
+            rt.setBookId(reserveTemp.getBookId());
+            rt.setUserId(userId);
+            rt.setMovieId(reserveTemp.getMovieId());
+            reserveTempService.save(rt);
+            return ResponseEntity.ok().body(rt);
+        }catch (Exception ex){
+            return ResponseEntity.badRequest().body("error");
+        }
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/allUserReservation")
-    public List<Reservation> viewAllUserReservation(@RequestBody Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        return reservationService.getAllReservation(userDetails.getId());
+    @RequestMapping(value = "/deleteReserve/{reserveId}",method = RequestMethod.DELETE)
+    public ResponseEntity<?> deleteResrve(@PathVariable Long reserveId){
+        try{
+            reserveTempService.delete(reserveId);
+            return ResponseEntity.ok().body("Success");
+        }catch (Exception ex){
+            return ResponseEntity.badRequest().body("error");
+        }
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/allReservation")
-    public List<Reservation> viewAllReservation() {
-        return reservationService.getAll();
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/viewReservation/{reservationId}")
-    public Reservation viewAReservation(@PathVariable Integer reservationId) {
-        return reservationService.getByReservationId(reservationId);
-    }
-
-    //update not working
-    @RequestMapping(method = RequestMethod.PUT, value = "updateReservation/{reservationId}")
-    public ResponseEntity<?> updateReservation(@PathVariable Integer reservationId, @RequestBody String status) {
-        return reservationService.updateStatusReservation(reservationId, status);
+    @RequestMapping(value = "/userReserves",method = RequestMethod.GET)
+    public ResponseEntity<?> findUserReserves(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        Long userId= userDetails.getId();
+        try{
+            List<ReserveTemp> rts=reserveTempService.usersReserves(userId);
+            return ResponseEntity.ok().body(rts);
+        }catch (Exception ex){
+            return ResponseEntity.badRequest().body("error"+ex);
+        }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////        Issue Controller         ////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-   @RequestMapping(value = "/reserveBook/{id}")
-   public ResponseEntity<?> saveReserveBook(@PathVariable Long id){
-        return null;
-   }
 
     @RequestMapping(value = "/addNewIssue")
     public ResponseEntity<?> saveSingleIssue(@RequestBody Issue issue) {
@@ -493,5 +497,37 @@ public class AdminController {
 
 
     // view my issued books - user functions
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //---------------------------------------------Book Reservation Functions***********************************************
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @RequestMapping(method = RequestMethod.POST, value = "/addReservation")
+    public ResponseEntity<?> saveReservation(@RequestBody Reservation reservation, Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        return reservationService.saveReservation(reservation, userDetails.getEmail(), reservation.getTotalAmount());
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/allUserReservation")
+    public List<Reservation> viewAllUserReservation(@RequestBody Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        return reservationService.getAllReservation(userDetails.getId());
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/allReservation")
+    public List<Reservation> viewAllReservation() {
+        return reservationService.getAll();
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/viewReservation/{reservationId}")
+    public Reservation viewAReservation(@PathVariable Integer reservationId) {
+        return reservationService.getByReservationId(reservationId);
+    }
+
+    //update not working
+    @RequestMapping(method = RequestMethod.PUT, value = "updateReservation/{reservationId}")
+    public ResponseEntity<?> updateReservation(@PathVariable Integer reservationId, @RequestBody String status) {
+        return reservationService.updateStatusReservation(reservationId, status);
+    }
+
 */
 }
