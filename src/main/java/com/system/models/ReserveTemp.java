@@ -19,7 +19,7 @@ public class ReserveTemp {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reserveId;
-    private Long bookId;
+    private Integer bookId;
     private Long movieId;
     private Long userId;
 }

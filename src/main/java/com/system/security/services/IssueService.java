@@ -28,6 +28,8 @@ public class IssueService {
     private BookService bookService;
     @Autowired
     private IssuedBookRepository issuedBookRepository;
+    @Autowired
+    private ReserveTempService reserveTempService;
 
     @Autowired
     public IssueService(IssueRepository issueRepository) {
@@ -156,6 +158,7 @@ public class IssueService {
                 issue1 = issueRepository.save(issue1);
                 for (int l = 0; l < list.length; l++) {
                     Book book = bookService.findBook(list[l]);
+                    reserveTempService.deleteReserveByBookId(user.getId(),list[l]);
                     if (book.getStatus().equals("Available")) {
                         Integer copies = book.getNoOfCopies();
                         book.setNoOfCopies(copies - 1);
@@ -168,6 +171,7 @@ public class IssueService {
                         ib.setEndDate(currentDatePlusFuture);
                         ib.setAmount(lendingChargePerBook);
                         issuedBookService.addNew(ib);
+
                     } else {
                         return ResponseEntity.badRequest().body(new MessageResponse("book is un-available"));
                     }

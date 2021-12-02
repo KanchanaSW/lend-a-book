@@ -10,4 +10,6 @@ import java.util.List;
 public interface ReserveTempRepository extends JpaRepository<ReserveTemp,Long> {
     List<ReserveTemp> findByUserId(Long userId);
     void deleteByUserId(Long userId);
+    void deleteByUserIdAndBookId(Long userId,Integer bookId);
+    ReserveTemp findByUserIdAndBookId(Long userId,Integer bookId);
 }
