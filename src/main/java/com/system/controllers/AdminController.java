@@ -259,6 +259,18 @@ public class AdminController {
             return ResponseEntity.badRequest().body("error"+ex);
         }
     }
+    @RequestMapping(value = "/userBookReserve/{bookId}",method = RequestMethod.GET)
+    public ResponseEntity<?> findUserBookReserves(@PathVariable Integer bookId){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        Long userId= userDetails.getId();
+        try{
+            ReserveTemp rti= reserveTempService.getReserve(bookId,userId);
+            return ResponseEntity.ok().body(rti);
+        }catch (Exception ex){
+            return ResponseEntity.badRequest().body("error"+ex);
+        }
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////        Issue Controller         ////////////////////////////////////////////////////

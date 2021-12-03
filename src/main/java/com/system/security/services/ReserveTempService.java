@@ -14,8 +14,7 @@ import java.util.Optional;
 public class ReserveTempService {
     @Autowired
     private ReserveTempRepository reserveTempRepository;
-    @Autowired
-    private BookRepository bookRepository;
+
 
     public ReserveTemp save(ReserveTemp reserveTemp){
         return reserveTempRepository.save(reserveTemp);
@@ -37,5 +36,8 @@ public class ReserveTempService {
     }
     public List<ReserveTemp> usersReserves(Long userId){
         return reserveTempRepository.findByUserId(userId);
+    }
+    public ReserveTemp getReserve(Integer bookId,Long userId){
+        return reserveTempRepository.findByUserIdAndBookId(userId,bookId);
     }
 }
