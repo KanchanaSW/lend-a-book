@@ -69,43 +69,44 @@ public class IssueService {
         return issueRepository.findByReturnedAndUser(1, user);
     }
 
-    public ResponseEntity<?> extendReturn(Issue issue,Date eDate){
+    public ResponseEntity<?> extendReturn(Issue issue){
         try {
-            Date expectedRDate = issue.getExpectedReturnDate();
-            double presentCharges = issue.getCharges();
-            long days_difference = calculateLendingDays(expectedRDate, eDate);
-            User user = issue.getUser();
-            Subscription mySubscription = subscriptionService.getSubById(user.getSubscription().getSubscriptionId());
-            // Integer subBooks = mySubscription.getNoOfBooks();
-           // Integer subDurationB = mySubscription.getDurationBooks() * 7;
-            double subBCharge = mySubscription.getChargesBooks();
-            double subOverDueCharges = mySubscription.getOverDueCharges();
+            Date extendRD=issue.getExtendReturnDate();
+            if (extendRD == null){
+                Date expectedRDate = issue.getExpectedReturnDate();
+                Date eDate = new Date(expectedRDate.getTime()+(5*24*60*60*1000));
+                double presentCharges = issue.getCharges();
+                long days_difference = 5;
+                User user = issue.getUser();
+                Subscription mySubscription = subscriptionService.getSubById(user.getSubscription().getSubscriptionId());
+                // Integer subBooks = mySubscription.getNoOfBooks();
+                // Integer subDurationB = mySubscription.getDurationBooks() * 7;
+                double subBCharge = mySubscription.getChargesBooks();
+                double subOverDueCharges = mySubscription.getOverDueCharges();
 
-            long booksCountNR = issuedBookService.countBooksByIssueNotReturned(issue);
-            System.out.println(booksCountNR);
-            double lendingChargePerBook = (days_difference) * subBCharge;
-            double futureCharges = (lendingChargePerBook * booksCountNR);
-            issue.setExtendReturnDate(eDate);
-            issue.setCharges(presentCharges + futureCharges);
-            issueRepository.save(issue);
-            List<IssuedBook> ibs = issuedBookRepository.findByIssueAndReturned(issue, 0);
-            System.out.println(ibs.size());
-      /*  List<Long> issuedBookIds = new ArrayList<Long>();
+                long booksCountNR = issuedBookService.countBooksByIssueNotReturned(issue);
+                System.out.println(booksCountNR);
+                double lendingChargePerBook = (days_difference) * subBCharge;
+                double futureCharges = (lendingChargePerBook * booksCountNR);
+                issue.setExtendReturnDate(eDate);
+                issue.setCharges(presentCharges + futureCharges);
+                issueRepository.save(issue);
+                List<IssuedBook> ibs = issuedBookRepository.findByIssueAndReturned(issue, 0);
+                System.out.println(ibs.size());
 
-        for (int k = 0; k < ibs.size(); k++) {
-            issuedBookIds.add(issuedBookService.getTheId(ibs.get(k)));
-        }
-        List<IssuedBook> ibList= issuedBookService.findIssuedBooksForUserIssues(issuedBookIds);*/
-
-            for (int l = 0; l < ibs.size(); l++) {
-                IssuedBook ib = issuedBookService.get(ibs.get(l).getIssuedBookId());
-                double presentAmount = ib.getAmount();
-                ib.setStartDate(expectedRDate);
-                ib.setEndDate(eDate);
-                ib.setAmount(presentAmount + (lendingChargePerBook * days_difference));
-                issuedBookService.save(ib);
+                for (int l = 0; l < ibs.size(); l++) {
+                    IssuedBook ib = issuedBookService.get(ibs.get(l).getIssuedBookId());
+                    double presentAmount = ib.getAmount();
+                    ib.setStartDate(expectedRDate);
+                    ib.setEndDate(eDate);
+                    ib.setAmount(presentAmount + (lendingChargePerBook));
+                    issuedBookService.save(ib);
+                }
+                return ResponseEntity.ok().body(new MessageResponse("Success "));
+            }else {
+                return ResponseEntity.ok().body(new MessageResponse("Already extended"));
             }
-            return ResponseEntity.ok().body(new MessageResponse("Success "));
+
         }catch (Exception ex){
             return ResponseEntity.badRequest().body(new MessageResponse("Error "));
         }
@@ -193,6 +194,7 @@ public class IssueService {
         long days_difference = (time_difference / (1000*60*60*24)) % 365;
         return days_difference;
     }
+
 
 }
 

@@ -285,12 +285,12 @@ public class AdminController {
         return issueService.addSingleIssue(email, issue);
     }
 
-    @RequestMapping(value = "/extendIssue/{issueId}", method = RequestMethod.PUT)
-    public ResponseEntity<?> extendBookIssue(@PathVariable Long issueId, @RequestBody Issue issue) {
-        Date extendDate=issue.getExtendReturnDate();
+    @RequestMapping(value = "/extendIssue/{issueId}", method = RequestMethod.GET)
+    public ResponseEntity<?> extendBookIssue(@PathVariable Long issueId) {
+
         Issue issue1 = issueService.get(issueId);
         if (issue1 != null) {
-            return issueService.extendReturn(issue1,extendDate);
+            return issueService.extendReturn(issue1);
         } else {
             return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
         }
@@ -321,20 +321,33 @@ public class AdminController {
 
     @RequestMapping(value = "/returnABook/{issuedBookId}", method = RequestMethod.GET)
     public ResponseEntity<?> returnABook(@PathVariable Long issuedBookId){
-        IssuedBook issuedBook= issuedBookService.get(issuedBookId);
-        if (issuedBook != null){
-            //set the book returned
-            issuedBook.setReturned(1);
-            issuedBookService.save(issuedBook);
+        IssuedBook issuedBook = issuedBookService.get(issuedBookId);
+      try {
+          if (issuedBook != null) {
+              //set the book returned
+              issuedBook.setReturned(1);
+              issuedBookService.save(issuedBook);
 
-            Book book = issuedBook.getBook();
-            Integer copies=book.getNoOfCopies();
-            book.setNoOfCopies(copies + 1);
-            bookService.save(book);
-            return ResponseEntity.ok().body(new MessageResponse("successfull"));
-        }else {
-            return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
-        }
+              Book book = issuedBook.getBook();
+              Integer copies = book.getNoOfCopies();
+              book.setNoOfCopies(copies + 1);
+              bookService.save(book);
+
+              Issue issue=issueService.get(issuedBook.getIssue().getIssueId());
+              long count =issuedBookService.countBooksByIssueNotReturned(issue);
+              if (count == 0){
+                  issue.setReturned(1);
+                  issueService.save(issue);
+              }
+              return ResponseEntity.ok().body(new MessageResponse("successfull"));
+          } else {
+              return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
+          }
+      }catch (Exception ex){
+          return ResponseEntity.badRequest().body("ex errer"+ex);
+      }finally {
+
+      }
     }
 
     @RequestMapping(value = "/viewMyIssues", method = RequestMethod.GET)
