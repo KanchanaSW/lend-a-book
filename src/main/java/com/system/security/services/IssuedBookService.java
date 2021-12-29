@@ -26,6 +26,9 @@ public class IssuedBookService {
     public IssuedBook get(Long id) {
         return issuedBookRepository.findById(id).get();
     }
+    public boolean exists(Long id){
+        return issuedBookRepository.existsById(id);
+    }
 
     public Long getTheId(IssuedBook ib){
         return issuedBookRepository.findById(ib.getIssuedBookId()).get().getIssuedBookId();

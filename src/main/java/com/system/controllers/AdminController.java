@@ -36,6 +36,8 @@ public class AdminController {
     private UserService userService;
     @Autowired
     private ReserveTempService reserveTempService;
+    @Autowired
+    private IssuedMovieService issuedMovieService;
 
 
 
@@ -302,34 +304,47 @@ public class AdminController {
         } else {
             return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
         }
-      /*  Issue issue1 = issueService.get(issueId);
-        if (issue1 != null) {
-            return issueService.extendReturn(issue1);
-        } else {
-            return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
-        }*/
     }
 
-    @RequestMapping(value = "/returnAllBooks/{issueId}", method = RequestMethod.GET)
-    public ResponseEntity<?> returnAllBooks(@PathVariable Long issueId) {
+    //working for both book amd movie
+    @RequestMapping(value = "/returnAllIssues/{issueId}", method = RequestMethod.GET)
+    public ResponseEntity<?> returnAllIssues(@PathVariable Long issueId) {
         Issue issue = issueService.get(issueId);
         if (issue != null) {
-            List<IssuedBook> issuedBooks = issue.getIssuedBooks();
-            for (int k = 0; k < issuedBooks.size(); k++) {
-                IssuedBook ib = issuedBooks.get(k);
-                ib.setReturned(1);
-                issuedBookService.save(ib);
+            if (issueService.isBooks(issueId)){
+                System.out.println(issueService.isBooks(issueId));
+                List<IssuedBook> issuedBooks = issue.getIssuedBooks();
+                for (IssuedBook ib : issuedBooks) {
+                    ib.setReturned(1);
+                    issuedBookService.save(ib);
 
-                Book book = ib.getBook();
-                Integer copies = book.getNoOfCopies();
-                book.setNoOfCopies(copies + 1);
-                bookService.save(book);
+                    Book book = ib.getBook();
+                    Integer copies = book.getNoOfCopies();
+                    book.setNoOfCopies(copies + 1);
+                    bookService.save(book);
+                }
+                issue.setReturned(1);
+                issueService.save(issue);
+                return ResponseEntity.ok().body(new MessageResponse("successful all books returned"));
+            }else {
+                System.out.println("are not books");
+                List<IssuedMovie> issuedMovies = issue.getIssuedMovies();
+                for (IssuedMovie im : issuedMovies) {
+                    im.setReturned(1);
+                    issuedMovieService.save(im);
+
+                    Movie movie = im.getMovie();
+                    Integer copies = movie.getNoOfCopies();
+                    movie.setNoOfCopies(copies + 1);
+                    movieService.save(movie);
+                }
+                issue.setReturned(1);
+                issueService.save(issue);
+                return ResponseEntity.ok().body(new MessageResponse("successful all movies returned"));
             }
-            issue.setReturned(1);
-            issueService.save(issue);
-            return ResponseEntity.ok().body(new MessageResponse("successfull"));
+
         } else {
-            return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
+            return ResponseEntity.ok().body(new MessageResponse("unSuccessful"));
         }
     }
 
@@ -359,8 +374,6 @@ public class AdminController {
           }
       }catch (Exception ex){
           return ResponseEntity.badRequest().body("ex errer"+ex);
-      }finally {
-
       }
     }
 
@@ -445,6 +458,36 @@ public class AdminController {
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
         String email = userDetails.getEmail();
         return issueService.addSingleMovieIssue(email, issue);
+    }
+
+    //return a movie
+    @RequestMapping(value = "/returnAMovie/{issuedMovieId}", method = RequestMethod.GET)
+    public ResponseEntity<?> returnAMovie(@PathVariable Long issuedMovieId){
+        IssuedMovie issuedMovie=issuedMovieService.get(issuedMovieId);
+        try {
+            if (issuedMovie != null) {
+                //set the book returned
+                issuedMovie.setReturned(1);
+                issuedMovieService.save(issuedMovie);
+
+                Movie movie = issuedMovie.getMovie();
+                Integer copies = movie.getNoOfCopies();
+                movie.setNoOfCopies(copies + 1);
+                movieService.save(movie);
+
+                Issue issue=issueService.get(issuedMovie.getIssue().getIssueId());
+                long count =issuedMovieService.countMoviesByIssueNotReturned(issue);
+                if (count == 0){
+                    issue.setReturned(1);
+                    issueService.save(issue);
+                }
+                return ResponseEntity.ok().body(new MessageResponse("successful issued book returned"));
+            } else {
+                return ResponseEntity.ok().body(new MessageResponse("unSuccessful"));
+            }
+        }catch (Exception ex){
+            return ResponseEntity.badRequest().body("ex error"+ex);
+        }
     }
 
 

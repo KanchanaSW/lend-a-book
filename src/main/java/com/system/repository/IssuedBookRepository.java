@@ -18,7 +18,7 @@ public interface IssuedBookRepository extends JpaRepository<IssuedBook,Long> {
     IssuedBook findByReturnedAndIssue(Integer returned,Issue issues);
     List<IssuedBook> findByIssueAndReturned(Issue issue,Integer returned);
     boolean existsByIssue(Issue issue);
-
+    boolean existsByIssuedBookIdAndBook(Long issuedBookId,Book book);
 }
 
 
