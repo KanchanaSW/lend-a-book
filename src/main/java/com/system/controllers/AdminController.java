@@ -165,7 +165,7 @@ public class AdminController {
 
     //get single book details
     @RequestMapping(method = RequestMethod.GET, value = "/movie/{movieId}")
-    public ResponseEntity<?> getMovieDetails(@PathVariable long movieId) {
+    public ResponseEntity<?> getMovieDetails(@PathVariable Integer movieId) {
         if (movieService.existsById(movieId)) {
             Movie movie = movieService.findMovieByID(movieId);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(movie);
@@ -191,7 +191,7 @@ public class AdminController {
 
     //update movie details here.
     @RequestMapping(method = RequestMethod.PUT, value = "/updateMovie/{movieId}")
-    public ResponseEntity<?> updateMovie(@Valid @PathVariable long movieId, @RequestBody MovieDTO movieDTO) {
+    public ResponseEntity<?> updateMovie(@Valid @PathVariable Integer movieId, @RequestBody MovieDTO movieDTO) {
         try {
             if (movieService.existsById(movieId)) {
                 movieService.updateMovie(movieDTO, movieId);
@@ -208,7 +208,7 @@ public class AdminController {
 
     //delete Movie
     @RequestMapping(method = RequestMethod.DELETE, value = "/deleteMovie/{movieId}")
-    public ResponseEntity<?> deleteMovie(@PathVariable long movieId) {
+    public ResponseEntity<?> deleteMovie(@PathVariable Integer movieId) {
         if (movieService.existsById(movieId)) {
             movieService.deleteMovie(movieId);
             return ResponseEntity.ok(new MessageResponse("Success: Movie deleted!!"));
@@ -285,15 +285,29 @@ public class AdminController {
         return issueService.addSingleIssue(email, issue);
     }
 
+    //working for both movie and books
     @RequestMapping(value = "/extendIssue/{issueId}", method = RequestMethod.GET)
     public ResponseEntity<?> extendBookIssue(@PathVariable Long issueId) {
 
         Issue issue1 = issueService.get(issueId);
         if (issue1 != null) {
-            return issueService.extendReturn(issue1);
+            if (issueService.isBooks(issueId)){
+                System.out.println(issueService.isBooks(issueId));
+                return issueService.extendReturn(issue1);//function for books
+            }else {
+                System.out.println("are not books");
+                return issueService.extendReturnMovie(issue1);
+            }
+
         } else {
             return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
         }
+      /*  Issue issue1 = issueService.get(issueId);
+        if (issue1 != null) {
+            return issueService.extendReturn(issue1);
+        } else {
+            return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
+        }*/
     }
 
     @RequestMapping(value = "/returnAllBooks/{issueId}", method = RequestMethod.GET)
@@ -397,9 +411,15 @@ public class AdminController {
     @RequestMapping(value = "/viewIssuedBooks/{issueId}", method = RequestMethod.GET)
     public ResponseEntity<?> viewIssuedBOOKS(@PathVariable Long issueId){
        try{
-           Issue issue=issueService.get(issueId);
-           List<IssuedBook> ibs= issuedBookService.findIssuedBooksBYissueNotReturned(issue);
-           return ResponseEntity.ok().body(ibs);
+           if (issueService.isBooks(issueId)){
+               System.out.println(issueService.isBooks(issueId));
+               Issue issue=issueService.get(issueId);
+               List<IssuedBook> ibs= issuedBookService.findIssuedBooksBYissueNotReturned(issue);
+               return ResponseEntity.ok().body(ibs);
+           }else {
+               System.out.println("are not books");
+               return ResponseEntity.ok("not books");
+           }
        }catch (Exception e){
            return ResponseEntity.badRequest().body("Error"+e);
        }
@@ -415,6 +435,38 @@ public class AdminController {
             return ResponseEntity.badRequest().body("Error"+e);
         }
     }
+
+
+    ///////////////////////////////////////////Movies////////////////////////////////////
+
+    @RequestMapping(value = "/addNewIssueMovie")
+    public ResponseEntity<?> saveSingleMovieIssue(@RequestBody Issue issue) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        String email = userDetails.getEmail();
+        return issueService.addSingleMovieIssue(email, issue);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     //temp
