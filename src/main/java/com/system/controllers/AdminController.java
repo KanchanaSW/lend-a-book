@@ -377,6 +377,7 @@ public class AdminController {
       }
     }
 
+    //both
     @RequestMapping(value = "/viewMyIssues", method = RequestMethod.GET)
     public ResponseEntity<?> viewMyIssuedBooks() {
         try {
@@ -399,6 +400,7 @@ public class AdminController {
 
     }
 
+    //both
     @RequestMapping(value = "/viewMyReturnedIssues", method = RequestMethod.GET)
     public ResponseEntity<?> viewMyReturnedIssuedBooks() {
         try {
@@ -421,7 +423,8 @@ public class AdminController {
 
     }
 
-    @RequestMapping(value = "/viewIssuedBooks/{issueId}", method = RequestMethod.GET)
+    //working both for movie and ooks
+    @RequestMapping(value = "/viewIssued/{issueId}", method = RequestMethod.GET)
     public ResponseEntity<?> viewIssuedBOOKS(@PathVariable Long issueId){
        try{
            if (issueService.isBooks(issueId)){
@@ -430,8 +433,10 @@ public class AdminController {
                List<IssuedBook> ibs= issuedBookService.findIssuedBooksBYissueNotReturned(issue);
                return ResponseEntity.ok().body(ibs);
            }else {
-               System.out.println("are not books");
-               return ResponseEntity.ok("not books");
+               System.out.println("are movies");
+               Issue issue=issueService.get(issueId);
+               List<IssuedMovie> iMs=issuedMovieService.findIssuedMoviesByIssueNotReturned(issue);
+               return ResponseEntity.ok(iMs);
            }
        }catch (Exception e){
            return ResponseEntity.badRequest().body("Error"+e);
