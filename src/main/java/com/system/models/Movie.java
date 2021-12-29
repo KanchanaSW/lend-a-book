@@ -11,7 +11,7 @@ public class Movie {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long movieId;
+    private Integer movieId;
     @NotNull
     private String title;
     private String status;

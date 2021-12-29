@@ -11,4 +11,5 @@ public interface ReserveTempRepository extends JpaRepository<ReserveTemp,Long> {
     List<ReserveTemp> findByUserId(Long userId);
     void deleteByUserId(Long userId);
     ReserveTemp findByUserIdAndBookId(Long userId,Integer bookId);
+    ReserveTemp findByUserIdAndMovieId(Long userId,Integer movieId);
 }

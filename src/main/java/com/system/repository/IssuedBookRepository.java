@@ -15,21 +15,9 @@ import java.util.List;
 public interface IssuedBookRepository extends JpaRepository<IssuedBook,Long> {
     Long countByBookAndReturned(Book book,Integer returned);
     Long countIssuedBooksByIssueAndReturned(Issue issue,Integer returned);
-    //Long findByReturnedAndIssue(Integer returned,Issue issues);
     IssuedBook findByReturnedAndIssue(Integer returned,Issue issues);
     List<IssuedBook> findByIssueAndReturned(Issue issue,Integer returned);
-
-
-/*
-*    // Long countByIssuedBookIdAndReturned(Long issuedBookId,Integer returned);
-     //IssuedBook findByIssueAndReturned(Issue issue,Integer returned);
-  //  IssuedBook findByReturnedAndIssue(Integer returned,Issue issues);
-    Long countByIssueAndReturned(Issue issue,Integer returned);
-    Long countIssuedBookByIssueAndReturned(Issue issue,Integer returned);
-    *
-    * */
-
-
+    boolean existsByIssue(Issue issue);
 
 }
 

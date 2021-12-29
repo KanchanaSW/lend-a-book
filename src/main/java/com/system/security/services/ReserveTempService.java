@@ -40,4 +40,14 @@ public class ReserveTempService {
     public ReserveTemp getReserve(Integer bookId,Long userId){
         return reserveTempRepository.findByUserIdAndBookId(userId,bookId);
     }
+
+    //movie
+    public void deleteReserveByMovieId(Long userId,Integer movieid){
+        ReserveTemp rt= reserveTempRepository.findByUserIdAndMovieId(userId,movieid);
+        System.out.println("////////////////////////"+rt.getReserveId());
+        reserveTempRepository.deleteById(rt.getReserveId());
+    }
+    public ReserveTemp getReserveMovie(Integer movieId,Long userId){
+        return reserveTempRepository.findByUserIdAndMovieId(userId,movieId);
+    }
 }

@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MovieRepository extends JpaRepository<Movie,Long> {
-    Optional<Movie> findById(Long movieId);
-    boolean existsById(Long movieId);
+public interface MovieRepository extends JpaRepository<Movie,Integer> {
+    Optional<Movie> findById(Integer movieId);
+    boolean existsById(Integer movieId);
     boolean existsByTitle(String title);
 
     List<Movie> findByR18(boolean r18);

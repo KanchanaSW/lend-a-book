@@ -32,8 +32,11 @@ public class Issue {
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL)
     private List<IssuedBook> issuedBooks;
 
-    @Transient
-   private List<Book> booksList;
+    @JsonIgnore
+    @OneToMany(mappedBy = "issue",cascade = CascadeType.ALL)
+    private List<IssuedMovie> issuedMovies;
+    //@Transient
+    //private List<Book> booksList;
 
     @Transient
     private Integer[] list;
