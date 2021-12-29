@@ -386,14 +386,11 @@ public class AdminController {
             String email = userDetails.getEmail();
             User user = userService.directUserType(email);//get user
             List<Issue> userIssues = issueService.findBynotReturUser(user);
-            /*
-            List<Long> issuedBookIds = new ArrayList<Long>();
-            for (int k = 0; k < userIssues.size(); k++) {
-                issuedBookIds.add(issuedBookService.issuedBookId(userIssues.get(k)));
+            if (userIssues.size() != 0){
+                return ResponseEntity.ok().body(userIssues);
+            }else {
+                return ResponseEntity.ok().body("empty");
             }
-            List<IssuedBook> ibList= issuedBookService.findIssuedBooksForUserIssues(issuedBookIds);
-            */
-            return ResponseEntity.ok().body(userIssues);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error");
         }
@@ -409,14 +406,11 @@ public class AdminController {
             String email = userDetails.getEmail();
             User user = userService.directUserType(email);//get user
             List<Issue> userIssues = issueService.findByReturnedUser(user);
-            /*
-            List<Long> issuedBookIds = new ArrayList<Long>();
-            for (int k = 0; k < userIssues.size(); k++) {
-                issuedBookIds.add(issuedBookService.issuedBookId(userIssues.get(k)));
+            if (userIssues.size() != 0){
+                return ResponseEntity.ok().body(userIssues);
+            }else {
+                return ResponseEntity.ok().body("empty");
             }
-            List<IssuedBook> ibList= issuedBookService.findIssuedBooksForUserIssues(issuedBookIds);
-            */
-            return ResponseEntity.ok().body(userIssues);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error");
         }
@@ -425,30 +419,54 @@ public class AdminController {
 
     //working both for movie and ooks
     @RequestMapping(value = "/viewIssued/{issueId}", method = RequestMethod.GET)
-    public ResponseEntity<?> viewIssuedBOOKS(@PathVariable Long issueId){
+    public ResponseEntity<?> viewIssuedBookOrMovie(@PathVariable Long issueId){
        try{
            if (issueService.isBooks(issueId)){
                System.out.println(issueService.isBooks(issueId));
                Issue issue=issueService.get(issueId);
                List<IssuedBook> ibs= issuedBookService.findIssuedBooksBYissueNotReturned(issue);
-               return ResponseEntity.ok().body(ibs);
+               if (ibs.size() != 0){
+                   return ResponseEntity.ok().body(ibs);
+               }else {
+                   return ResponseEntity.ok().body("empty");
+               }
            }else {
                System.out.println("are movies");
                Issue issue=issueService.get(issueId);
                List<IssuedMovie> iMs=issuedMovieService.findIssuedMoviesByIssueNotReturned(issue);
-               return ResponseEntity.ok(iMs);
+               if (iMs.size() != 0){
+                   return ResponseEntity.ok().body(iMs);
+               }else {
+                   return ResponseEntity.ok().body("empty");
+               }
            }
        }catch (Exception e){
            return ResponseEntity.badRequest().body("Error"+e);
        }
     }
 
-    @RequestMapping(value = "/viewReturnedIssuedBooks/{issueId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/viewReturnedIssued/{issueId}", method = RequestMethod.GET)
     public ResponseEntity<?> viewReturnIssuedBOOKS(@PathVariable Long issueId){
         try{
-            Issue issue=issueService.get(issueId);
-            List<IssuedBook> ibs= issuedBookService.findIssuedBooksBYissueR(issue);
-            return ResponseEntity.ok().body(ibs);
+            if (issueService.isBooks(issueId)){
+                System.out.println(issueService.isBooks(issueId));
+                Issue issue=issueService.get(issueId);
+                List<IssuedBook> ibs= issuedBookService.findIssuedBooksBYissueR(issue);
+                if (ibs.size() != 0){
+                    return ResponseEntity.ok().body(ibs);
+                }else {
+                    return ResponseEntity.ok().body("empty");
+                }
+            }else {
+                System.out.println("are movies");
+                Issue issue=issueService.get(issueId);
+                List<IssuedMovie> iMs=issuedMovieService.findIssuedMoviesByIssueR(issue);
+                if (iMs.size() != 0){
+                    return ResponseEntity.ok().body(iMs);
+                }else {
+                    return ResponseEntity.ok().body("empty");
+                }
+            }
         }catch (Exception e){
             return ResponseEntity.badRequest().body("Error"+e);
         }
