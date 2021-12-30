@@ -112,13 +112,13 @@ public class IssueService {
                     ib.setAmount(presentAmount + (lendingChargePerBook));
                     issuedBookService.save(ib);
                 }
-                return ResponseEntity.ok().body(new MessageResponse("Success "));
+                return ResponseEntity.ok().body("success");
             }else {
-                return ResponseEntity.ok().body(new MessageResponse("Already extended"));
+                return ResponseEntity.ok().body("Already extended");
             }
 
         }catch (Exception ex){
-            return ResponseEntity.badRequest().body(new MessageResponse("Error "));
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
@@ -184,13 +184,13 @@ public class IssueService {
                         issuedBookService.addNew(ib);
 
                     } else {
-                        return ResponseEntity.badRequest().body(new MessageResponse("book is un-available"));
+                        return ResponseEntity.ok().body("book is un-available");
                     }
                 }
                 //
-                return ResponseEntity.ok().body(new MessageResponse("Success "));
+                return ResponseEntity.ok().body("success");
             } else {
-                return ResponseEntity.ok().body(new MessageResponse("Number of books for subscription is over"));
+                return ResponseEntity.ok().body("Number of books for subscription is over");
             }
         }
         catch (Exception e){
@@ -273,17 +273,17 @@ public class IssueService {
                         issuedMovieService.addNew(im);
 
                     } else {
-                        return ResponseEntity.badRequest().body(new MessageResponse("movie is un-available"));
+                        return ResponseEntity.ok().body("movie is un-available");
                     }
                 }
                 //
-                return ResponseEntity.ok().body(new MessageResponse("Success "));
+                return ResponseEntity.ok().body("success");
             } else {
-                return ResponseEntity.ok().body(new MessageResponse("Number of movies for subscription is over"));
+                return ResponseEntity.ok().body("Number of movies for subscription is over");
             }
         }
         catch (Exception e){
-            return ResponseEntity.badRequest().body("error"+e);
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
@@ -321,13 +321,13 @@ public class IssueService {
                     im.setAmount(presentAmount + (lendingChargePerMovie));
                     issuedMovieService.save(im);
                 }
-                return ResponseEntity.ok().body(new MessageResponse("Success "));
+                return ResponseEntity.ok().body("success");
             }else {
-                return ResponseEntity.ok().body(new MessageResponse("Already extended"));
+                return ResponseEntity.ok().body("Already extended");
             }
 
         }catch (Exception ex){
-            return ResponseEntity.badRequest().body(new MessageResponse("Error "));
+            return ResponseEntity.badRequest().body("error");
         }
     }
 }

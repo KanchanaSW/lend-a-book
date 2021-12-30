@@ -50,17 +50,15 @@ public class AdminController {
     public ResponseEntity<?> addBook(@RequestBody BookDTO newBook) {
         try {
             if (bookService.existsIsbn(newBook.getIsbn())) {
-                return ResponseEntity.badRequest().body(
-                        new MessageResponse("Error : Book already exists with the same ISBN"));
+                return ResponseEntity.badRequest().body("existsIsbn");
             } else if (bookService.existsTitle(newBook.getTitle())) {
-                return ResponseEntity.badRequest().body(
-                        new MessageResponse("Error : Book already exists with the same Title"));
+                return ResponseEntity.badRequest().body("existsTitle");
             } else {
                 bookService.addBook(newBook);
-                return ResponseEntity.ok(new MessageResponse("Success : Book added!!!"));
+                return ResponseEntity.ok("success");
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("error occcured" + e));
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
@@ -71,7 +69,7 @@ public class AdminController {
             List<Book> list = bookService.getALlBooks();
             return ResponseEntity.ok().body(list);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("error occcured get all books" + e));
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
@@ -79,7 +77,7 @@ public class AdminController {
     @RequestMapping(method = RequestMethod.GET, value = "/books/count")
     public ResponseEntity<?> countAllbooks() {
         long x = bookService.countAllBooks();
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Count is : " + x);
+        return ResponseEntity.ok(x);
     }
 
     //get single book details
@@ -87,11 +85,9 @@ public class AdminController {
     public ResponseEntity<?> getBookDetails(@PathVariable Integer id) {
         if (bookService.existsId(id)) {
             Book book = bookService.findBook(id);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(book);
+            return ResponseEntity.ok().body(book);
         } else {
-            return ResponseEntity.badRequest().body(
-                    new MessageResponse("Error : book don't exists with the Id : " + id)
-            );
+            return ResponseEntity.badRequest().body("dontExist");
         }
     }
 
@@ -100,11 +96,9 @@ public class AdminController {
     public ResponseEntity<?> searchBookByTitle(@PathVariable String title) {
         if (bookService.existsTitle(title)) {
             Book book = bookService.findBookTitle(title);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(book);
+            return ResponseEntity.ok().body(book);
         } else {
-            return ResponseEntity.badRequest().body(
-                    new MessageResponse("Error : book don't exists with the title : " + title)
-            );
+            return ResponseEntity.badRequest().body("dontExists");
         }
     }
 
@@ -114,26 +108,28 @@ public class AdminController {
         try {
             if (bookService.existsIsbn(book.getIsbn())) {
                 bookService.updateBook(book);
-                return ResponseEntity.status(HttpStatus.ACCEPTED).body(book);
+                return ResponseEntity.ok().body(book);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        new MessageResponse("Error : book dont exists with isbn :" + book.getIsbn())
-                );
+                return ResponseEntity.badRequest().body("dontExists");
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("error occcured" + e));
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
     //delete book
     @RequestMapping(method = RequestMethod.DELETE, value = "/deleteBook/{id}")
     public ResponseEntity<?> deleteBook(@PathVariable Integer id) {
-        if (bookService.existsId(id)) {
-            bookService.deleteBook(id);
-            return ResponseEntity.ok(new MessageResponse("Success: Book deleted!!"));
-        } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error : no book with this isbn : " + id));
-        }
+       try{
+           if (bookService.existsId(id)) {
+               bookService.deleteBook(id);
+               return ResponseEntity.ok("success");
+           } else {
+               return ResponseEntity.badRequest().body("dontExists");
+           }
+       }catch (Exception ex){
+           return ResponseEntity.badRequest().body("issued");
+       }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -144,14 +140,13 @@ public class AdminController {
     public ResponseEntity<?> addMovie(@RequestBody MovieDTO movieDTO) {
         try {
             if (movieService.existsByTitle(movieDTO.getTitle())) {
-                return ResponseEntity.badRequest().body(
-                        new MessageResponse("Error : Movie already exists with the same Title"));
+                return ResponseEntity.badRequest().body("existsTitle");
             } else {
                 movieService.addMovie(movieDTO);
-                return ResponseEntity.ok(new MessageResponse("Success : Movie added!!!"));
+                return ResponseEntity.ok("success");
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("error occcured" + e));
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
@@ -162,7 +157,7 @@ public class AdminController {
             List<Movie> list = movieService.getAllMovies();
             return ResponseEntity.ok().body(list);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("error occcured get all Movies" + e));
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
@@ -171,11 +166,9 @@ public class AdminController {
     public ResponseEntity<?> getMovieDetails(@PathVariable Integer movieId) {
         if (movieService.existsById(movieId)) {
             Movie movie = movieService.findMovieByID(movieId);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(movie);
+            return ResponseEntity.ok().body(movie);
         } else {
-            return ResponseEntity.badRequest().body(
-                    new MessageResponse("Error : movie don't exists with the movieId : " + movieId)
-            );
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
@@ -184,11 +177,9 @@ public class AdminController {
     public ResponseEntity<?> getMovieDetailsByTitle(@PathVariable String title) {
         if (movieService.existsByTitle(title)) {
             Movie movie = movieService.findMovieByTitle(title);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(movie);
+            return ResponseEntity.ok().body(movie);
         } else {
-            return ResponseEntity.badRequest().body(
-                    new MessageResponse("Error : movie don't exists with the title : " + title)
-            );
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
@@ -198,26 +189,28 @@ public class AdminController {
         try {
             if (movieService.existsById(movieId)) {
                 movieService.updateMovie(movieDTO, movieId);
-                return ResponseEntity.status(HttpStatus.ACCEPTED).body(movieDTO);
+                return ResponseEntity.ok().body(movieDTO);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        new MessageResponse("Error : Movie don't exists with MovieId :" + movieDTO.getMovieId())
-                );
+                return ResponseEntity.badRequest().body("dontExists");
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("error occcured" + e));
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
     //delete Movie
     @RequestMapping(method = RequestMethod.DELETE, value = "/deleteMovie/{movieId}")
     public ResponseEntity<?> deleteMovie(@PathVariable Integer movieId) {
-        if (movieService.existsById(movieId)) {
-            movieService.deleteMovie(movieId);
-            return ResponseEntity.ok(new MessageResponse("Success: Movie deleted!!"));
-        } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error : no Movie with this movieId : " + movieId));
-        }
+       try{
+           if (movieService.existsById(movieId)) {
+               movieService.deleteMovie(movieId);
+               return ResponseEntity.ok("success");
+           } else {
+               return ResponseEntity.badRequest().body("dontExists");
+           }
+       }catch (Exception ex){
+           return ResponseEntity.badRequest().body("issued");
+       }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -253,10 +246,10 @@ public class AdminController {
         Long userId= userDetails.getId();
         try{
             List<ReserveTemp> rts=reserveTempService.usersReservesBooks(userId);
-
             return ResponseEntity.ok().body(rts);
         }catch (Exception ex){
-            return ResponseEntity.badRequest().body("error"+ex);
+            System.out.println(ex);
+            return ResponseEntity.badRequest().body("error");
         }
     }
     @RequestMapping(value = "/userReservesMovies",method = RequestMethod.GET)
@@ -268,7 +261,7 @@ public class AdminController {
             List<ReserveTemp> rts=reserveTempService.usersReservesMovies(userId);
             return ResponseEntity.ok().body(rts);
         }catch (Exception ex){
-            return ResponseEntity.badRequest().body("error"+ex);
+            return ResponseEntity.badRequest().body("error");
         }
     }
     @RequestMapping(value = "/userBookReserve/{bookId}",method = RequestMethod.GET)
@@ -280,7 +273,7 @@ public class AdminController {
             ReserveTemp rti= reserveTempService.getReserve(bookId,userId);
             return ResponseEntity.ok().body(rti);
         }catch (Exception ex){
-            return ResponseEntity.badRequest().body("error"+ex);
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
@@ -300,20 +293,24 @@ public class AdminController {
     //working for both movie and books
     @RequestMapping(value = "/extendIssue/{issueId}", method = RequestMethod.GET)
     public ResponseEntity<?> extendBookIssue(@PathVariable Long issueId) {
+        try{
+            Issue issue1 = issueService.get(issueId);
+            if (issue1 != null) {
+                if (issueService.isBooks(issueId)){
+                    System.out.println(issueService.isBooks(issueId));
+                    return issueService.extendReturn(issue1);//function for books
+                }else {
+                    System.out.println("are not books");
+                    return issueService.extendReturnMovie(issue1);
+                }
 
-        Issue issue1 = issueService.get(issueId);
-        if (issue1 != null) {
-            if (issueService.isBooks(issueId)){
-                System.out.println(issueService.isBooks(issueId));
-                return issueService.extendReturn(issue1);//function for books
-            }else {
-                System.out.println("are not books");
-                return issueService.extendReturnMovie(issue1);
+            } else {
+                return ResponseEntity.ok().body("error");
             }
-
-        } else {
-            return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
+        }catch (Exception ex){
+            return ResponseEntity.badRequest().body("error-ex");
         }
+
     }
 
     //working for both book amd movie
@@ -335,7 +332,7 @@ public class AdminController {
                 }
                 issue.setReturned(1);
                 issueService.save(issue);
-                return ResponseEntity.ok().body(new MessageResponse("successful all books returned"));
+                return ResponseEntity.ok().body("successful all books returned");
             }else {
                 System.out.println("are not books");
                 List<IssuedMovie> issuedMovies = issue.getIssuedMovies();
@@ -350,11 +347,11 @@ public class AdminController {
                 }
                 issue.setReturned(1);
                 issueService.save(issue);
-                return ResponseEntity.ok().body(new MessageResponse("successful all movies returned"));
+                return ResponseEntity.ok().body("successful all movies returned");
             }
 
         } else {
-            return ResponseEntity.ok().body(new MessageResponse("unSuccessful"));
+            return ResponseEntity.ok().body("error");
         }
     }
 
@@ -378,12 +375,12 @@ public class AdminController {
                   issue.setReturned(1);
                   issueService.save(issue);
               }
-              return ResponseEntity.ok().body(new MessageResponse("successfull"));
+              return ResponseEntity.ok().body("success");
           } else {
-              return ResponseEntity.ok().body(new MessageResponse("unSuccessfull"));
+              return ResponseEntity.ok().body("un-successful");
           }
       }catch (Exception ex){
-          return ResponseEntity.badRequest().body("ex errer"+ex);
+          return ResponseEntity.badRequest().body("error");
       }
     }
 
@@ -398,7 +395,7 @@ public class AdminController {
             List<Issue> userIssues = issueService.findBynotReturUser(user);
             return ResponseEntity.ok().body(userIssues);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error");
+            return ResponseEntity.badRequest().body("error");
         }
 
     }
@@ -414,7 +411,7 @@ public class AdminController {
             List<Issue> userIssues = issueService.findByReturnedUser(user);
             return ResponseEntity.ok().body(userIssues);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error");
+            return ResponseEntity.badRequest().body("error");
         }
 
     }
@@ -443,7 +440,7 @@ public class AdminController {
                return ResponseEntity.ok().body(iMs);
            }
        }catch (Exception e){
-           return ResponseEntity.badRequest().body("Error"+e);
+           return ResponseEntity.badRequest().body("error");
        }
     }
 
@@ -462,7 +459,7 @@ public class AdminController {
                 return ResponseEntity.ok().body(iMs);
             }
         }catch (Exception e){
-            return ResponseEntity.badRequest().body("Error"+e);
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
@@ -498,12 +495,12 @@ public class AdminController {
                     issue.setReturned(1);
                     issueService.save(issue);
                 }
-                return ResponseEntity.ok().body(new MessageResponse("successful issued movie returned"));
+                return ResponseEntity.ok().body("success");
             } else {
-                return ResponseEntity.ok().body(new MessageResponse("unSuccessful"));
+                return ResponseEntity.ok().body("un-success");
             }
         }catch (Exception ex){
-            return ResponseEntity.badRequest().body("ex error"+ex);
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
