@@ -15,4 +15,6 @@ public interface ReserveTempRepository extends JpaRepository<ReserveTemp,Long> {
     void deleteByUser(User user);
     ReserveTemp findByUserAndBook(User user, Book book);
     ReserveTemp findByUserAndMovie(User user, Movie movie);
+    boolean existsByBookAndUser(Book book,User user);
+    boolean existsByMovieAndUser(Movie movie,User user);
 }

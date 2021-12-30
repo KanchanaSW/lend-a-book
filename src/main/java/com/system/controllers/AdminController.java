@@ -253,7 +253,7 @@ public class AdminController {
         Long userId= userDetails.getId();
         try{
             List<ReserveTemp> rts=reserveTempService.usersReservesBooks(userId);
-            System.out.println(rts.size());
+
             return ResponseEntity.ok().body(rts);
         }catch (Exception ex){
             return ResponseEntity.badRequest().body("error"+ex);
@@ -498,7 +498,7 @@ public class AdminController {
                     issue.setReturned(1);
                     issueService.save(issue);
                 }
-                return ResponseEntity.ok().body(new MessageResponse("successful issued book returned"));
+                return ResponseEntity.ok().body(new MessageResponse("successful issued movie returned"));
             } else {
                 return ResponseEntity.ok().body(new MessageResponse("unSuccessful"));
             }

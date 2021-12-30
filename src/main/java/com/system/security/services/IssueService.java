@@ -251,14 +251,18 @@ public class IssueService {
                 issue2.setExpectedReturnDate(currentDatePlusFuture);
                 issue2.setCharges(lendingChargePerMovie * list.length);
                 issue2 = issueRepository.save(issue2);
+                System.out.println(issue2.getIssueDate());
                 for (int l = 0; l < list.length; l++) {
                     Movie movie = movieService.findMovie(list[l]);
-                    System.out.println(movie);
+                    System.out.println("Title==> "+movie.getTitle());
                     reserveTempService.deleteReserveByMovieId(user.getId(),list[l]);//beta
                     if (movie.getStatus().equals("Available")) {
                         Integer copies = movie.getNoOfCopies();
                         movie.setNoOfCopies(copies - 1);
                         movie = movieService.save(movie);
+
+                        System.out.println(movie.getNoOfCopies());
+                        System.out.println(movie.getTitle());
 
                         IssuedMovie im = new IssuedMovie();
                         im.setMovie(movie);

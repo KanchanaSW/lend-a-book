@@ -29,17 +29,21 @@ public class ReserveTempService {
     public ReserveTemp save(ReserveTempDTO reserveTempDTO,Long userId){
         try{
             ReserveTemp reserveTemp=new ReserveTemp();
-            if (reserveTempDTO.getBookId() != null){
-                Book book= bookService.findBook(reserveTempDTO.getBookId());
-                reserveTemp.setBook(book);
-            }
-            if (reserveTempDTO.getMovieId() != null){
-                Movie movie= movieService.findMovie(reserveTempDTO.getMovieId());
-                reserveTemp.setMovie(movie);
-            }
             User user=userService.findUser(userId);
             reserveTemp.setUser(user);
 
+            if (reserveTempDTO.getBookId() != null){
+                Book book= bookService.findBook(reserveTempDTO.getBookId());
+                if (!reserveTempRepository.existsByBookAndUser(book,user)){
+                    reserveTemp.setBook(book);
+                }
+            }
+            if (reserveTempDTO.getMovieId() != null) {
+                Movie movie = movieService.findMovie(reserveTempDTO.getMovieId());
+                if (!reserveTempRepository.existsByMovieAndUser(movie, user)) {
+                    reserveTemp.setMovie(movie);
+                }
+            }
             reserveTempRepository.save(reserveTemp);
             return reserveTemp;
 
@@ -67,7 +71,6 @@ public class ReserveTempService {
     public ReserveTemp get(Long reserveTempId){
         return reserveTempRepository.getById(reserveTempId);
     }
-
     public List<ReserveTemp> usersReservesBooks(Long userId){
         User user=userService.findUser(userId);
         List<ReserveTemp> list=new ArrayList<>();
@@ -106,11 +109,11 @@ public class ReserveTempService {
 
     //movie
     public void deleteReserveByMovieId(Long userId,Integer movieid){
-        Movie movie= movieService.findMovie(movieid);
         User user=userService.findUser(userId);
+        Movie movie= movieService.findMovie(movieid);
         ReserveTemp rt= reserveTempRepository.findByUserAndMovie(user,movie);
-        System.out.println("////////////////////////"+rt.getReserveId());
-        reserveTempRepository.deleteById(rt.getReserveId());
+        reserveTempRepository.delete(rt);
+        System.out.println("//reserve deleted//=--"+rt.getReserveId());
     }
     public ReserveTemp getReserveMovie(Integer movieId,Long userId){
         Movie movie= movieService.findMovie(movieId);
