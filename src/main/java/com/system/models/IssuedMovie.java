@@ -18,7 +18,7 @@ public class IssuedMovie {
     private Integer returned;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "movie", referencedColumnName = "movieId")
+    @JoinColumn(name = "movies", referencedColumnName = "movieId")
     private Movie movie;
 
     @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)

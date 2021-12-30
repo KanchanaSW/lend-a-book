@@ -2,6 +2,7 @@ package com.system.controllers;
 
 import com.system.DTO.BookDTO;
 import com.system.DTO.MovieDTO;
+import com.system.DTO.ReserveTempDTO;
 import com.system.models.*;
 import com.system.payload.response.MessageResponse;
 import com.system.repository.UserRepository;
@@ -223,16 +224,12 @@ public class AdminController {
     ////////////////////   Reserve Controller     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     @RequestMapping(value = "/reserve")
-    public ResponseEntity<?> saveReserve(@RequestBody ReserveTemp reserveTemp){
+    public ResponseEntity<?> saveReserve(@RequestBody ReserveTempDTO reserveTempDTO){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
         Long userId= userDetails.getId();
         try{
-            ReserveTemp rt=new ReserveTemp();
-            rt.setBookId(reserveTemp.getBookId());
-            rt.setUserId(userId);
-            rt.setMovieId(reserveTemp.getMovieId());
-            reserveTempService.save(rt);
+            ReserveTemp rt= reserveTempService.save(reserveTempDTO,userId);
             return ResponseEntity.ok().body(rt);
         }catch (Exception ex){
             return ResponseEntity.badRequest().body("error");
@@ -249,13 +246,26 @@ public class AdminController {
         }
     }
 
-    @RequestMapping(value = "/userReserves",method = RequestMethod.GET)
+    @RequestMapping(value = "/userReservesBooks",method = RequestMethod.GET)
     public ResponseEntity<?> findUserReserves(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
         Long userId= userDetails.getId();
         try{
-            List<ReserveTemp> rts=reserveTempService.usersReserves(userId);
+            List<ReserveTemp> rts=reserveTempService.usersReservesBooks(userId);
+            System.out.println(rts.size());
+            return ResponseEntity.ok().body(rts);
+        }catch (Exception ex){
+            return ResponseEntity.badRequest().body("error"+ex);
+        }
+    }
+    @RequestMapping(value = "/userReservesMovies",method = RequestMethod.GET)
+    public ResponseEntity<?> findUserReservesMovies(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+        Long userId= userDetails.getId();
+        try{
+            List<ReserveTemp> rts=reserveTempService.usersReservesMovies(userId);
             return ResponseEntity.ok().body(rts);
         }catch (Exception ex){
             return ResponseEntity.badRequest().body("error"+ex);
@@ -386,11 +396,7 @@ public class AdminController {
             String email = userDetails.getEmail();
             User user = userService.directUserType(email);//get user
             List<Issue> userIssues = issueService.findBynotReturUser(user);
-            if (userIssues.size() != 0){
-                return ResponseEntity.ok().body(userIssues);
-            }else {
-                return ResponseEntity.ok().body("empty");
-            }
+            return ResponseEntity.ok().body(userIssues);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error");
         }
@@ -406,15 +412,19 @@ public class AdminController {
             String email = userDetails.getEmail();
             User user = userService.directUserType(email);//get user
             List<Issue> userIssues = issueService.findByReturnedUser(user);
-            if (userIssues.size() != 0){
-                return ResponseEntity.ok().body(userIssues);
-            }else {
-                return ResponseEntity.ok().body("empty");
-            }
+            return ResponseEntity.ok().body(userIssues);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error");
         }
 
+    }
+    @RequestMapping(value = "/isBooks/{issueId}",method = RequestMethod.GET)
+    public String isBooks(@PathVariable Long issueId){
+        if (issueService.isBooks(issueId)){
+            return "books";
+        }else{
+            return "movies";
+        }
     }
 
     //working both for movie and ooks
@@ -425,20 +435,12 @@ public class AdminController {
                System.out.println(issueService.isBooks(issueId));
                Issue issue=issueService.get(issueId);
                List<IssuedBook> ibs= issuedBookService.findIssuedBooksBYissueNotReturned(issue);
-               if (ibs.size() != 0){
-                   return ResponseEntity.ok().body(ibs);
-               }else {
-                   return ResponseEntity.ok().body("empty");
-               }
+               return ResponseEntity.ok().body(ibs);
            }else {
                System.out.println("are movies");
                Issue issue=issueService.get(issueId);
                List<IssuedMovie> iMs=issuedMovieService.findIssuedMoviesByIssueNotReturned(issue);
-               if (iMs.size() != 0){
-                   return ResponseEntity.ok().body(iMs);
-               }else {
-                   return ResponseEntity.ok().body("empty");
-               }
+               return ResponseEntity.ok().body(iMs);
            }
        }catch (Exception e){
            return ResponseEntity.badRequest().body("Error"+e);
@@ -452,20 +454,12 @@ public class AdminController {
                 System.out.println(issueService.isBooks(issueId));
                 Issue issue=issueService.get(issueId);
                 List<IssuedBook> ibs= issuedBookService.findIssuedBooksBYissueR(issue);
-                if (ibs.size() != 0){
-                    return ResponseEntity.ok().body(ibs);
-                }else {
-                    return ResponseEntity.ok().body("empty");
-                }
+                return ResponseEntity.ok().body(ibs);
             }else {
                 System.out.println("are movies");
                 Issue issue=issueService.get(issueId);
                 List<IssuedMovie> iMs=issuedMovieService.findIssuedMoviesByIssueR(issue);
-                if (iMs.size() != 0){
-                    return ResponseEntity.ok().body(iMs);
-                }else {
-                    return ResponseEntity.ok().body("empty");
-                }
+                return ResponseEntity.ok().body(iMs);
             }
         }catch (Exception e){
             return ResponseEntity.badRequest().body("Error"+e);

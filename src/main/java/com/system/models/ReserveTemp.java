@@ -3,12 +3,8 @@ package com.system.models;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GeneratorType;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,7 +15,18 @@ public class ReserveTemp {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reserveId;
-    private Integer bookId;
-    private Long movieId;
-    private Long userId;
+
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JoinColumn(name = "users", referencedColumnName = "id")
+    private User user;
+
+    @OneToOne(targetEntity = Book.class,cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JoinColumn(name = "books",referencedColumnName = "id")
+    private Book book;
+
+    @OneToOne(targetEntity = Movie.class,cascade = CascadeType.PERSIST,fetch = FetchType.EAGER)
+    @JoinColumn(name = "movies",referencedColumnName = "movieId")
+    private Movie movie;
+
+
 }

@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Entity
+@Table(name = "Movies")
 public class Movie {
 
     @Id
