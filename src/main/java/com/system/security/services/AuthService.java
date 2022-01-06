@@ -47,7 +47,7 @@ public class AuthService {
         try {
             if (userRepository.existsByEmail(registerUser.getEmail())) {
                 //new MessageResponse("Username already taken!")
-                return ResponseEntity.badRequest().body(new MessageResponse(("Email already taken!")));
+                return ResponseEntity.badRequest().body("emailExists");
 
             }else {
                 //create a new user account after the checking
@@ -64,17 +64,17 @@ public class AuthService {
                 Role role = roleService.getRoleByName("ROLE_USER");
                 user.setRole(role);
                 userRepository.save(user);
-                return ResponseEntity.ok(new MessageResponse("User registered successfully"));
+                return ResponseEntity.ok("success");
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e);
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
     public ResponseEntity<?> loginUserService(LoginRequest authRequest) {
         try {
             if (!userRepository.existsByEmail(authRequest.getEmail())) {
-                return ResponseEntity.ok("User name doesn't exist");
+                return ResponseEntity.badRequest().body("dontExists");
             }
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
@@ -98,7 +98,7 @@ public class AuthService {
                     subs
                     ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MessageResponse(("Error"+e)));
+            return ResponseEntity.badRequest().body("error");
         }
     }
 }
