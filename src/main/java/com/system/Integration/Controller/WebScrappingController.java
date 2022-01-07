@@ -1,5 +1,6 @@
 package com.system.Integration.Controller;
 
+import com.system.Integration.Models.WebScrapingMovie;
 import com.system.Integration.Models.WebScrapping;
 import com.system.Integration.Services.WebScrapingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,14 @@ public class WebScrappingController {
         this.webScrapingService = webScrapingService;
     }
 
-    @GetMapping("data")
-    public List<WebScrapping> getWebscrapeData() throws IOException {
-        return webScrapingService.getWebscrapeData();
+    @GetMapping("booksData")
+    public List<WebScrapping> getScrapeData() throws IOException {
+        return webScrapingService.getWebScrapeData3();
     }
+
+    @GetMapping("movieData")
+    public List<WebScrapingMovie> getScrapeMovieData() throws IOException {
+        return webScrapingService.getScrapedMovies();
+    }
+
 }
