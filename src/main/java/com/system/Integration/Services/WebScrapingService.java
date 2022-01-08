@@ -16,7 +16,107 @@ import java.util.List;
 
 @Service
 public class WebScrapingService {
-    public List<WebScrapping> getWebScrapeData() throws IOException {
+
+    public List<WebScrapping> getWebScrapeBook() throws IOException {
+        List<WebScrapping> webScrappingList = new ArrayList<>();
+
+        Document document = Jsoup.
+                connect("https://www.valorebooks.com/top-textbook-rentals").get();
+
+        Elements body=document.select("div#main_rental_results");
+        //System.out.println(body.select("div.result_listing").size());
+        for (Element e : body.select("div.result_listing")) {
+
+            String url=e.select("div.info > div.product_thumb a").attr("href");
+            String bookLink = "https://www.valorebooks.com"+url;
+
+            String coverImage = e.select("div.info > div.product_thumb > a img").attr("src");
+            String bookTitle = e.select("div.info > div.product_thumb > a img").attr("alt");
+
+            String bookAuthor = e.select("div.info > div.desc span.by").text();
+            String price=e.select("div.price > a.rent_it").text();
+
+            WebScrapping webScrapping = new WebScrapping
+                    (coverImage, bookTitle, bookAuthor, bookLink,price);
+            webScrappingList.add(webScrapping);
+
+        }
+        System.out.println(webScrappingList);
+        return webScrappingList;
+    }
+
+    public List<WebScrapingMovie> getScrapedMovies() throws IOException {
+        List<WebScrapingMovie> webScrappingList = new ArrayList<>();
+        Document document = Jsoup.connect("https://vimeo.com/ondemand/discover/staffpicks").get();
+
+        Elements links = document.select("ul.js-infinite_scroll_container "); // a with href
+
+        for (Element e : links.select("li")) {
+            String movieTitle = e.select("h3.vod_card_title").text();
+            String tt = e.select("div.vod_card.js-vod_card a").attr("href");
+            String movieLink = "https://vimeo.com/" + tt;
+            String coverImage = e.select("div.img img").attr("src");
+            String rentPrice = e.select("div.img > div.vod_card_poster_cover > div.vod_poster_cover_prices > div.vod_poster_cover_price i").attr("title");
+
+            WebScrapingMovie webScrapping = new WebScrapingMovie
+                    (coverImage, movieTitle, movieLink, rentPrice);
+            webScrappingList.add(webScrapping);
+        }
+        System.out.println(webScrappingList);
+        return webScrappingList;
+    }
+
+
+
+/*    //movies
+    //https://archive.org/details/movie_trailers?and[]=year%3A%222021%22
+    public List<WebScrapingMovie> getScrapedMovies() throws IOException {
+        List<WebScrapingMovie> webScrappingList = new ArrayList<>();
+        //String url="https://archive.org/details/movie_trailers";
+        String url="https://archive.org/details/televisionmovies";
+        Document document = Jsoup.connect(url).get();
+
+        for (Element e : document.select("div.results div.C234")) {
+            String movieTitle = e.select("div.item-ttl.C.C2 a div.ttl").text();
+            if (!movieTitle.contentEquals("")) {
+                String link = e.select("div.item-ttl.C.C2 a").attr("href");
+                String movieLink = "https://archive.org/" + link;//link
+                String[] list = link.split("/");
+                String coverImage = "https://archive.org/services/img/" + list[2];
+
+                WebScrapingMovie webScrapping = new WebScrapingMovie
+                        (coverImage, movieTitle, movieLink);
+                webScrappingList.add(webScrapping);
+            }
+
+        }
+        System.out.println(webScrappingList);
+        return webScrappingList;
+
+    }
+
+    public List<WebScrapingMovie> getScrapedMovies2() throws IOException {
+        List<WebScrapingMovie> webScrappingList = new ArrayList<>();
+        Document document = Jsoup.connect("https://www.azmovies.net/popular-movies").get();
+        String title = document.title(); //Get title
+        System.out.println("  Title: " + title); //Print title.
+        Elements links = document.select("ul.page-itemlist"); // a with href
+
+        Elements imgs=document.select("img[src]");
+        System.out.println(imgs.select("img[src]").attr("src"));
+
+        for (Element e : links.select("li")) {
+            String movieTitle=e.select("div.gridinfo h2 a").text();
+            String movieLink = e.select("div.pagethumb a").attr("href");
+            String coverImage = e.select("a img").attr("src");
+            WebScrapingMovie webScrapping = new WebScrapingMovie
+                    (coverImage, movieTitle, movieLink);
+            webScrappingList.add(webScrapping);
+        }
+        System.out.println(webScrappingList);
+        return webScrappingList;
+    }*/
+/*    public List<WebScrapping> getWebScrapeData() throws IOException {
         List<WebScrapping> webScrappingList = new ArrayList<>();
         Document document = Jsoup.
                 connect("https://www.overdrive.com/subjects/young-adult-fiction").get();
@@ -97,78 +197,5 @@ public class WebScrapingService {
         }
         System.out.println(webScrappingList);
         return webScrappingList;
-    }
-
-    public List<WebScrapingMovie> getScrapedMovies() throws IOException {
-        List<WebScrapingMovie> webScrappingList = new ArrayList<>();
-        Document document = Jsoup.connect("https://vimeo.com/ondemand/discover/staffpicks").get();
-
-        Elements links = document.select("ul.js-infinite_scroll_container "); // a with href
-
-        for (Element e : links.select("li")) {
-            String movieTitle = e.select("h3.vod_card_title").text();
-            String tt = e.select("div.vod_card.js-vod_card a").attr("href");
-            String movieLink = "https://vimeo.com/" + tt;
-            String coverImage = e.select("div.img img").attr("src");
-            String rentPrice = e.select("div.img > div.vod_card_poster_cover > div.vod_poster_cover_prices > div.vod_poster_cover_price i").attr("title");
-
-            WebScrapingMovie webScrapping = new WebScrapingMovie
-                    (coverImage, movieTitle, movieLink, rentPrice);
-            webScrappingList.add(webScrapping);
-        }
-        System.out.println(webScrappingList);
-        return webScrappingList;
-    }
-
-
-
-/*    //movies
-    //https://archive.org/details/movie_trailers?and[]=year%3A%222021%22
-    public List<WebScrapingMovie> getScrapedMovies() throws IOException {
-        List<WebScrapingMovie> webScrappingList = new ArrayList<>();
-        //String url="https://archive.org/details/movie_trailers";
-        String url="https://archive.org/details/televisionmovies";
-        Document document = Jsoup.connect(url).get();
-
-        for (Element e : document.select("div.results div.C234")) {
-            String movieTitle = e.select("div.item-ttl.C.C2 a div.ttl").text();
-            if (!movieTitle.contentEquals("")) {
-                String link = e.select("div.item-ttl.C.C2 a").attr("href");
-                String movieLink = "https://archive.org/" + link;//link
-                String[] list = link.split("/");
-                String coverImage = "https://archive.org/services/img/" + list[2];
-
-                WebScrapingMovie webScrapping = new WebScrapingMovie
-                        (coverImage, movieTitle, movieLink);
-                webScrappingList.add(webScrapping);
-            }
-
-        }
-        System.out.println(webScrappingList);
-        return webScrappingList;
-
-    }
-
-    public List<WebScrapingMovie> getScrapedMovies2() throws IOException {
-        List<WebScrapingMovie> webScrappingList = new ArrayList<>();
-        Document document = Jsoup.connect("https://www.azmovies.net/popular-movies").get();
-        String title = document.title(); //Get title
-        System.out.println("  Title: " + title); //Print title.
-        Elements links = document.select("ul.page-itemlist"); // a with href
-
-        Elements imgs=document.select("img[src]");
-        System.out.println(imgs.select("img[src]").attr("src"));
-
-        for (Element e : links.select("li")) {
-            String movieTitle=e.select("div.gridinfo h2 a").text();
-            String movieLink = e.select("div.pagethumb a").attr("href");
-            String coverImage = e.select("a img").attr("src");
-            WebScrapingMovie webScrapping = new WebScrapingMovie
-                    (coverImage, movieTitle, movieLink);
-            webScrappingList.add(webScrapping);
-        }
-        System.out.println(webScrappingList);
-        return webScrappingList;
     }*/
-
 }

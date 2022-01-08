@@ -12,5 +12,5 @@ public class WebScrapping {
     String bookTitle;
     String bookAuthor;
     String bookLink;
-
+    String price;
 }
