@@ -4,6 +4,7 @@ import com.system.DTO.BookDTO;
 import com.system.DTO.MovieDTO;
 import com.system.DTO.ReserveTempDTO;
 import com.system.Integration.CSV.Reader;
+import com.system.Integration.CSV.ReaderMovie;
 import com.system.models.*;
 import com.system.payload.response.MessageResponse;
 import com.system.repository.UserRepository;
@@ -42,6 +43,8 @@ public class AdminController {
     private IssuedMovieService issuedMovieService;
     @Autowired
     private Reader reader;
+    @Autowired
+    private ReaderMovie readerMovie;
 
 
 
@@ -166,6 +169,7 @@ public class AdminController {
            return ResponseEntity.badRequest().body("issued");
        }
     }
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //********************************************Movie Functions*************************************************************************
@@ -494,6 +498,35 @@ public class AdminController {
                 return ResponseEntity.ok().body(iMs);
             }
         }catch (Exception e){
+            return ResponseEntity.badRequest().body("error");
+        }
+    }
+    //movie csv functions
+    @RequestMapping(value = "/addCSVMovie")
+    public ResponseEntity<?> addCSVMovie(@RequestBody MovieDTO movieDTO) {
+        try {
+            if (movieService.existsByTitle(movieDTO.getTitle())) {
+                return ResponseEntity.badRequest().body("existsTitle");
+            } else {
+                movieService.addMovie(movieDTO);
+                readerMovie.removeLine(movieDTO.getTitle());
+                return ResponseEntity.ok("success");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("error");
+        }
+    }
+    @RequestMapping(method = RequestMethod.PUT, value = "/updateCSVMovie/{movieId}")
+    public ResponseEntity<?> updateCSVMovie(@Valid @PathVariable Integer movieId, @RequestBody MovieDTO movieDTO) {
+        try {
+            if (movieService.existsByTitle(movieDTO.getTitle())) {
+                movieService.updateMovieCopies(movieDTO, movieId);
+                readerMovie.removeLine(movieDTO.getTitle());
+                return ResponseEntity.ok().body(movieDTO);
+            } else {
+                return ResponseEntity.badRequest().body("dontExists");
+            }
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body("error");
         }
     }

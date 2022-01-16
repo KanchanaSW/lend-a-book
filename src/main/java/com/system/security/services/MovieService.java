@@ -93,6 +93,17 @@ public class MovieService {
             return null;
         }
     }
+    public Movie updateMovieCopies(MovieDTO movieDTO, Integer movieId) {
+        try {
+            Movie m = movieRepository.getById(movieId);
+            m.setNoOfCopies(m.getNoOfCopies()+movieDTO.getNoOfCopies());
+            movieRepository.save(m);
+
+            return m;
+        } catch (Exception e) {
+            return null;
+        }
+    }
     /*    public Book findBook(Integer id){
         Optional<Book> book=bookRepository.findById(id);
         Book b=null;
