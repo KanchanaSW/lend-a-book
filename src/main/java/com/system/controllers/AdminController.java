@@ -3,6 +3,7 @@ package com.system.controllers;
 import com.system.DTO.BookDTO;
 import com.system.DTO.MovieDTO;
 import com.system.DTO.ReserveTempDTO;
+import com.system.Integration.CSV.Reader;
 import com.system.models.*;
 import com.system.payload.response.MessageResponse;
 import com.system.repository.UserRepository;
@@ -39,6 +40,8 @@ public class AdminController {
     private ReserveTempService reserveTempService;
     @Autowired
     private IssuedMovieService issuedMovieService;
+    @Autowired
+    private Reader reader;
 
 
 
@@ -111,6 +114,38 @@ public class AdminController {
                 return ResponseEntity.ok().body(book);
             } else {
                 return ResponseEntity.badRequest().body("dontExists");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("error");
+        }
+    }
+    //update book copies here.
+    @RequestMapping(method = RequestMethod.PUT, value = "/updateBookCopies/{id}")
+    public ResponseEntity<?> updateBookCopies(@Valid @PathVariable Integer id, @RequestBody BookDTO book) {
+        try {
+            if (bookService.existsIsbn(book.getIsbn())) {
+                bookService.updateBookCopies(book);
+                return ResponseEntity.ok().body(book);
+            } else {
+                return ResponseEntity.badRequest().body("dontExists");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("error");
+        }
+    }
+    //csv function
+    //add book
+    @RequestMapping(value = "/addCSVBook")
+    public ResponseEntity<?> addBookCSV(@RequestBody BookDTO newBook) {
+        try {
+            if (bookService.existsIsbn(newBook.getIsbn())) {
+                return ResponseEntity.badRequest().body("existsIsbn");
+            } else if (bookService.existsTitle(newBook.getTitle())) {
+                return ResponseEntity.badRequest().body("existsTitle");
+            } else {
+                bookService.addBook(newBook);
+                reader.removeLine(newBook.getTitle());
+                return ResponseEntity.ok("success");
             }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("error");

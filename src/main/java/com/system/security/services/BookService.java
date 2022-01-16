@@ -1,6 +1,7 @@
 package com.system.security.services;
 
 import com.system.DTO.BookDTO;
+import com.system.Integration.CSV.Reader;
 import com.system.models.Book;
 import com.system.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ public class BookService {
 
     @Autowired
     private BookRepository bookRepository;
+    @Autowired
+    private Reader reader;
 
 
     public List<Book> get(List<Integer> ids){
@@ -104,6 +107,17 @@ public class BookService {
 
            bookRepository.save(book);
 
+            return book;
+        }catch (Exception e){
+            return null;
+        }
+    }
+    public Book updateBookCopies(BookDTO bookDTO){
+        try{
+            Book book = bookRepository.findByIsbn(bookDTO.getIsbn());
+            book.setNoOfCopies(book.getNoOfCopies()+bookDTO.getNoOfCopies());
+            bookRepository.save(book);
+            reader.removeLine(bookDTO.getTitle());
             return book;
         }catch (Exception e){
             return null;
