@@ -9,6 +9,7 @@ import com.system.payload.response.MessageResponse;
 import com.system.repository.UserRepository;
 import com.system.security.jwt.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -98,6 +99,7 @@ public class AuthService {
                     subs
                     ));
         } catch (Exception e) {
+            System.out.println(e);
             return ResponseEntity.badRequest().body("error");
         }
     }
