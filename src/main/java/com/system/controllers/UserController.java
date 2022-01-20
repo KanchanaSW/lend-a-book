@@ -21,6 +21,7 @@ import java.util.Optional;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("api/users")
+@PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
 @RestController
 public class UserController {
     @Autowired
@@ -66,9 +67,10 @@ public class UserController {
             Long id= userDetails.getId();
 
            User user= userService.updateSubscription(id, subscriptionId);
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok().body("success");
         } catch (Exception ex) {
-            return ResponseEntity.badRequest().body(new MessageResponse("error" + ex));
+            System.out.println(ex);
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
@@ -101,13 +103,11 @@ public class UserController {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(value = "/subscription/all")
     public List<Subscription> allSubscriptions() {
         return subscriptionService.getAll();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/subscription/save")
     public ResponseEntity<?> saveNew(@RequestBody Subscription subscription) {
         try {
@@ -118,18 +118,17 @@ public class UserController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/subscription/update")
     public ResponseEntity<?> update(@RequestBody Subscription subscription) {
         try {
             subscriptionService.updateSubs(subscription);
-            return ResponseEntity.ok().body(new MessageResponse("Updated Success" + subscription));
+            return ResponseEntity.ok().body("success");
         } catch (Exception ex) {
-            return ResponseEntity.badRequest().body(new MessageResponse("error" + ex));
+            System.out.println(ex);
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @GetMapping(value = "/subscription/find/{subscriptionId}")
     public Subscription findSubs(@PathVariable Long subscriptionId) {
         try {
