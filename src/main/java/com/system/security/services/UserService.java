@@ -39,7 +39,7 @@ public class UserService {
         Optional<User> user = userRepository.findById(userDTO.getId());
         User u=user.get();
 
-        u.setEmail(userDTO.getEmail());
+        //u.setEmail(userDTO.getEmail());
         u.setFullname(userDTO.getFullname());
         u.setDOB(userDTO.getDOB());
         u.setImage(userDTO.getImage());

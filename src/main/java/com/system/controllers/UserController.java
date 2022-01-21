@@ -51,9 +51,10 @@ public class UserController {
     public ResponseEntity<?> updateUser(@RequestBody User userDTO) {
         try {
             User user = userService.updateUser(userDTO);
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok("success");
         } catch (Exception ex) {
-            return ResponseEntity.badRequest().body(new MessageResponse("error" + ex));
+            System.out.println(ex);
+            return ResponseEntity.badRequest().body("error");
         }
     }
 
