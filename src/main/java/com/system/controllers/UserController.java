@@ -21,7 +21,6 @@ import java.util.Optional;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("api/users")
-@PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
 @RestController
 public class UserController {
     @Autowired
@@ -80,35 +79,50 @@ public class UserController {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-    @GetMapping(value = "/otp/request-password-change")
-    public ResponseEntity<?> generateOPTSendEmail(@RequestParam String email) {
-        return otpService.sendOTPEmail(email);
+    @PostMapping(value = "/otp/request-password-change/{email}")
+    public ResponseEntity<?> generateOPTSendEmail(@PathVariable String email) {
+        ResponseEntity<?> check= otpService.sendOTPEmail(email);
+        if (check.getStatusCodeValue() == 200){
+            return ResponseEntity.ok().body("success");
+        }else{
+            return ResponseEntity.badRequest().body("error");
+        }
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-    @GetMapping(value = "/otp/valid-check")
-    public ResponseEntity<?> checkOTPAvailable(@RequestParam Integer otpNumber) {
-        return otpService.checkOTPAvailable(otpNumber);
+    @PostMapping(value = "/otp/valid-check/{otpNumber}")
+    public ResponseEntity<?> checkOTPAvailable(@PathVariable Integer otpNumber) {
+        ResponseEntity<?> check=otpService.checkOTPAvailable(otpNumber);
+        if (check.getStatusCodeValue()==200){
+            return ResponseEntity.ok().body("success");
+        }else if (check.equals("expired")){
+            return ResponseEntity.badRequest().body("expired");
+        }else{
+            return ResponseEntity.badRequest().body("error");
+        }
     }
 
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-    @PostMapping(value = "/otp/reset/{id}")
-    public ResponseEntity<?> resetPassword(@PathVariable Long id, @RequestParam String newPassword) {
-        return otpService.resetPassword(newPassword, id);
+    @PostMapping(value = "/otp/reset/{otp}/pass/{password}")
+    public ResponseEntity<?> resetPassword(@PathVariable Integer otp, @PathVariable String password) {
+       ResponseEntity<?> check= otpService.resetPassword(password, otp);
+        if (check.getStatusCodeValue() == 200){
+            return ResponseEntity.ok().body("success");
+        }else{
+            return ResponseEntity.badRequest().body("error");
+        }
     }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //--------------------------------Subscriptions-----------------------------------------------------------
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @GetMapping(value = "/subscription/all")
     public List<Subscription> allSubscriptions() {
         return subscriptionService.getAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @PostMapping(value = "/subscription/save")
     public ResponseEntity<?> saveNew(@RequestBody Subscription subscription) {
         try {
@@ -119,6 +133,7 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @PutMapping(value = "/subscription/update")
     public ResponseEntity<?> update(@RequestBody Subscription subscription) {
         try {
@@ -130,6 +145,7 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @GetMapping(value = "/subscription/find/{subscriptionId}")
     public Subscription findSubs(@PathVariable Long subscriptionId) {
         try {

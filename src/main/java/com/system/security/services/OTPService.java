@@ -74,7 +74,7 @@ public class OTPService {
                 if ((otp.getExpiryDate()).compareTo(today) > 0) {
                     return ResponseEntity.ok().body(new MessageResponse("Success: Valid OTP"));
                 } else {
-                    return ResponseEntity.badRequest().body(new MessageResponse(("Error: OTP is expired. Please generate a new one!")));
+                    return ResponseEntity.badRequest().body("expired");
                 }
             } else {
                 return ResponseEntity.badRequest().body(new MessageResponse("Error: Please generate a new one"));
@@ -84,9 +84,11 @@ public class OTPService {
         }
     }
 
-    public ResponseEntity<?> resetPassword(String password, Long userId) {
+    public ResponseEntity<?> resetPassword(String password, Integer otpNumber) {
         try {
-            User user = userRepository.findById(userId).get();
+            OTP otp = otpRepository.findByOtpNumber(otpNumber);
+            User user = userRepository.findById(otp.getUser().getId()).get();
+            System.out.println(user.getEmail());
             user.setPassword(passwordEncoder.encode(password));
             userRepository.save(user);
             return ResponseEntity.ok().body(new MessageResponse("Success: Password successfully updated"));
