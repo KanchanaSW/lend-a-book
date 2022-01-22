@@ -1,4 +1,4 @@
-package com.system.Config;
+package com.system.Integration.Config;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;

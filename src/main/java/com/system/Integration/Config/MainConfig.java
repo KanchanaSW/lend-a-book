@@ -1,4 +1,4 @@
-package com.system.Config;
+package com.system.Integration.Config;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
