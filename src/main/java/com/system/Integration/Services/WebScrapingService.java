@@ -13,6 +13,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class WebScrapingService {
@@ -50,7 +51,6 @@ public class WebScrapingService {
         Document document = Jsoup.connect("https://vimeo.com/ondemand/discover/staffpicks").get();
 
         Elements links = document.select("ul.js-infinite_scroll_container "); // a with href
-
         for (Element e : links.select("li")) {
             String movieTitle = e.select("h3.vod_card_title").text();
             String tt = e.select("div.vod_card.js-vod_card a").attr("href");
@@ -60,9 +60,33 @@ public class WebScrapingService {
 
             WebScrapingMovie webScrapping = new WebScrapingMovie
                     (coverImage, movieTitle, movieLink, rentPrice);
-            webScrappingList.add(webScrapping);
+            if (!Objects.equals(webScrapping.getMovieTitle(), "")){
+                webScrappingList.add(webScrapping);
+            }
         }
-        System.out.println(webScrappingList);
+        System.out.println("page 1");
+        System.out.println(webScrappingList.size());
+        // webScrappingList.clear();
+
+        // Move to the next page
+        Element page = document.select("p.txt_align_center a").first();
+        Document pageDoc = Jsoup.connect(page.attr("abs:href")).get();
+        Elements links2 = pageDoc.select("ul.js-infinite_scroll_container "); // a with href
+        for (Element e : links2.select("li")) {
+            String movieTitle = e.select("h3.vod_card_title").text();
+            String tt = e.select("div.vod_card.js-vod_card a").attr("href");
+            String movieLink = "https://vimeo.com/" + tt;
+            String coverImage = e.select("div.img img").attr("src");
+            String rentPrice = e.select("div.img > div.vod_card_poster_cover > div.vod_poster_cover_prices > div.vod_poster_cover_price i").attr("title");
+
+            WebScrapingMovie webScrapping = new WebScrapingMovie
+                    (coverImage, movieTitle, movieLink, rentPrice);
+            if (!Objects.equals(webScrapping.getMovieTitle(), "")){
+                webScrappingList.add(webScrapping);
+            }
+        }
+        System.out.println("page 2");
+        System.out.println(webScrappingList.size());
         return webScrappingList;
     }
 
