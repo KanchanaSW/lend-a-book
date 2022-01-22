@@ -56,6 +56,9 @@ public class IssueService {
     public List<Issue> getAllUnreturned() {
         return issueRepository.findByReturned(0);
     }
+    public List<Issue> getAllReturned() {
+        return issueRepository.findByReturned(1);
+    }
 
     public Issue addNew(Issue issue) {
         return issueRepository.save(issue);

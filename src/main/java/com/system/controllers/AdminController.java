@@ -435,7 +435,26 @@ public class AdminController {
           return ResponseEntity.badRequest().body("error");
       }
     }
-
+//ADMIN
+@RequestMapping(value = "/viewIssuesR", method = RequestMethod.GET)
+public ResponseEntity<?> viewIssuedBooks() {
+    try {
+        List<Issue> userIssues = issueService.getAllReturned();
+        return ResponseEntity.ok().body(userIssues);
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body("error");
+    }
+}
+    @RequestMapping(value = "/viewIssuesNR", method = RequestMethod.GET)
+    public ResponseEntity<?> viewNRIssuedBooks() {
+        try {
+            List<Issue> userIssues = issueService.getAllUnreturned();
+            return ResponseEntity.ok().body(userIssues);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("error");
+        }
+    }
+    //--------------------
     //both
     @RequestMapping(value = "/viewMyIssues", method = RequestMethod.GET)
     public ResponseEntity<?> viewMyIssuedBooks() {
