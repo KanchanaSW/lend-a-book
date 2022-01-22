@@ -3,7 +3,7 @@ package com.system.security.services;
 
 import com.system.models.OTP;
 import com.system.models.User;
-import com.system.payload.response.MessageResponse;
+import com.system.models.MessageResponse;
 import com.system.repository.OTPRepository;
 import com.system.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

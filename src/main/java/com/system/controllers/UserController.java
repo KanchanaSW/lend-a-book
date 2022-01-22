@@ -2,8 +2,7 @@ package com.system.controllers;
 
 import com.system.models.Subscription;
 import com.system.models.User;
-import com.system.payload.response.MessageResponse;
-import com.system.repository.UserRepository;
+import com.system.models.MessageResponse;
 import com.system.security.services.OTPService;
 import com.system.security.services.SubscriptionService;
 import com.system.security.services.UserDetailsImpl;
@@ -15,9 +14,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("api/users")
@@ -36,6 +35,23 @@ public class UserController {
     @RequestMapping(value = "/all")
     public List<User> getAllUsers() {
         return userService.getAllUsers();
+    }
+    //search name
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/userName/{name}")
+    public List<User> search(@PathVariable String name){
+        if (name.equals("ALL")){
+            return userService.getAllUsers();
+        }else{
+            return userService.searchName(name);
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @RequestMapping(value = "/name")
+    public List<User> searchN(HttpServletRequest request){
+        String name=request.getParameter("name");
+        return userService.searchName(name);
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")

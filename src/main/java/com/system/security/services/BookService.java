@@ -29,6 +29,10 @@ public class BookService {
         bookRepository.findAll().forEach(e->list.add(e));
         return list;
     }
+    //search books
+    public List<Book> searchBooks(String title) {
+        return bookRepository.name(title);
+    }
     //list all distint books
     public List<Book> getAllUniqueBooks(){
         List<Book> list=new ArrayList<>();

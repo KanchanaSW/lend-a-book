@@ -1,4 +1,4 @@
-package com.system.payload.response;
+package com.system.models;
 
 public class MessageResponse {
 	private String message;

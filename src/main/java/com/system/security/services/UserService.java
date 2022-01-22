@@ -72,6 +72,9 @@ public class UserService {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
+    public List<User> searchName(String name){
+        return userRepository.name(name);
+    }
 
 
     public void deleteUser(Long id) {

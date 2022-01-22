@@ -6,11 +6,8 @@ import com.system.DTO.ReserveTempDTO;
 import com.system.Integration.CSV.Reader;
 import com.system.Integration.CSV.ReaderMovie;
 import com.system.models.*;
-import com.system.payload.response.MessageResponse;
-import com.system.repository.UserRepository;
 import com.system.security.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -18,8 +15,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -76,6 +71,15 @@ public class AdminController {
             return ResponseEntity.ok().body(list);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("error");
+        }
+    }
+    //search
+    @RequestMapping(method = RequestMethod.GET, value = "/books/{name}")
+    public List<Book> getAllBookListSearch(@PathVariable String name) {
+        if (name.equals("ALL")){
+            return bookService.getALlBooks();
+        }else{
+            return bookService.searchBooks(name);
         }
     }
 
@@ -197,6 +201,15 @@ public class AdminController {
             return ResponseEntity.ok().body(list);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("error");
+        }
+    }
+    //search movies
+    @RequestMapping(method = RequestMethod.GET, value = "/movies/{name}")
+    public List<Movie> searchMovi(@PathVariable String name){
+        if (name.equals("ALL")){
+            return movieService.getAllMovies();
+        }else{
+            return movieService.searchMovies(name);
         }
     }
 

@@ -1,4 +1,4 @@
-package com.system.payload.request;
+package com.system.models;
 
 import javax.validation.constraints.NotBlank;
 

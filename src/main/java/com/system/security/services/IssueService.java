@@ -1,7 +1,6 @@
 package com.system.security.services;
 
 import com.system.models.*;
-import com.system.payload.response.MessageResponse;
 import com.system.repository.IssueRepository;
 import com.system.repository.IssuedBookRepository;
 import com.system.repository.IssuedMovieRepository;
@@ -9,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;

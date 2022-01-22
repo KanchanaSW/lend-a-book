@@ -32,6 +32,12 @@ public class MovieService {
         movieRepository.findAll().forEach(e -> list.add(e));
         return list;
     }
+    //search movies
+    public List<Movie> searchMovies(String name) {
+        List<Movie> list = new ArrayList<>();
+        movieRepository.name(name).forEach(e -> list.add(e));
+        return list;
+    }
 
     //list all movies by title
     public List<Movie> getAllByTitle(String title) {

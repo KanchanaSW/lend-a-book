@@ -1,4 +1,4 @@
-package com.system.payload.response;
+package com.system.models;
 
 import com.system.models.Subscription;
 import lombok.AllArgsConstructor;
