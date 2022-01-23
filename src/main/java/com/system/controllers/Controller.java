@@ -21,7 +21,7 @@ import java.util.*;
 @RestController
 @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
 @RequestMapping("/api/admin")
-public class AdminController {
+public class Controller {
     @Autowired
     private BookService bookService;
     @Autowired
@@ -40,7 +40,6 @@ public class AdminController {
     private Reader reader;
     @Autowired
     private ReaderMovie readerMovie;
-
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,12 +72,13 @@ public class AdminController {
             return ResponseEntity.badRequest().body("error");
         }
     }
+
     //search
     @RequestMapping(method = RequestMethod.GET, value = "/books/{name}")
     public List<Book> getAllBookListSearch(@PathVariable String name) {
-        if (name.equals("ALL")){
+        if (name.equals("ALL")) {
             return bookService.getALlBooks();
-        }else{
+        } else {
             return bookService.searchBooks(name);
         }
     }
@@ -126,6 +126,7 @@ public class AdminController {
             return ResponseEntity.badRequest().body("error");
         }
     }
+
     //update book copies here.
     @RequestMapping(method = RequestMethod.PUT, value = "/updateBookCopies/{id}")
     public ResponseEntity<?> updateBookCopies(@Valid @PathVariable Integer id, @RequestBody BookDTO book) {
@@ -140,6 +141,7 @@ public class AdminController {
             return ResponseEntity.badRequest().body("error");
         }
     }
+
     //csv function
     //add book
     @RequestMapping(value = "/addCSVBook")
@@ -162,16 +164,16 @@ public class AdminController {
     //delete book
     @RequestMapping(method = RequestMethod.DELETE, value = "/deleteBook/{id}")
     public ResponseEntity<?> deleteBook(@PathVariable Integer id) {
-       try{
-           if (bookService.existsId(id)) {
-               bookService.deleteBook(id);
-               return ResponseEntity.ok("success");
-           } else {
-               return ResponseEntity.badRequest().body("dontExists");
-           }
-       }catch (Exception ex){
-           return ResponseEntity.badRequest().body("issued");
-       }
+        try {
+            if (bookService.existsId(id)) {
+                bookService.deleteBook(id);
+                return ResponseEntity.ok("success");
+            } else {
+                return ResponseEntity.badRequest().body("dontExists");
+            }
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body("issued");
+        }
     }
 
 
@@ -203,12 +205,13 @@ public class AdminController {
             return ResponseEntity.badRequest().body("error");
         }
     }
+
     //search movies
     @RequestMapping(method = RequestMethod.GET, value = "/movies/{name}")
-    public List<Movie> searchMovi(@PathVariable String name){
-        if (name.equals("ALL")){
+    public List<Movie> searchMovi(@PathVariable String name) {
+        if (name.equals("ALL")) {
             return movieService.getAllMovies();
-        }else{
+        } else {
             return movieService.searchMovies(name);
         }
     }
@@ -253,78 +256,111 @@ public class AdminController {
     //delete Movie
     @RequestMapping(method = RequestMethod.DELETE, value = "/deleteMovie/{movieId}")
     public ResponseEntity<?> deleteMovie(@PathVariable Integer movieId) {
-       try{
-           if (movieService.existsById(movieId)) {
-               movieService.deleteMovie(movieId);
-               return ResponseEntity.ok("success");
-           } else {
-               return ResponseEntity.badRequest().body("dontExists");
-           }
-       }catch (Exception ex){
-           return ResponseEntity.badRequest().body("issued");
-       }
+        try {
+            if (movieService.existsById(movieId)) {
+                movieService.deleteMovie(movieId);
+                return ResponseEntity.ok("success");
+            } else {
+                return ResponseEntity.badRequest().body("dontExists");
+            }
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body("issued");
+        }
+    }
+
+    //movie csv functions
+    @RequestMapping(value = "/addCSVMovie")
+    public ResponseEntity<?> addCSVMovie(@RequestBody MovieDTO movieDTO) {
+        try {
+            if (movieService.existsByTitle(movieDTO.getTitle())) {
+                return ResponseEntity.badRequest().body("existsTitle");
+            } else {
+                movieService.addMovie(movieDTO);
+                readerMovie.removeLine(movieDTO.getTitle());
+                return ResponseEntity.ok("success");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("error");
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, value = "/updateCSVMovie/{movieId}")
+    public ResponseEntity<?> updateCSVMovie(@Valid @PathVariable Integer movieId, @RequestBody MovieDTO movieDTO) {
+        try {
+            if (movieService.existsByTitle(movieDTO.getTitle())) {
+                movieService.updateMovieCopies(movieDTO, movieId);
+                readerMovie.removeLine(movieDTO.getTitle());
+                return ResponseEntity.ok().body(movieDTO);
+            } else {
+                return ResponseEntity.badRequest().body("dontExists");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("error");
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////   Reserve Controller     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     @RequestMapping(value = "/reserve")
-    public ResponseEntity<?> saveReserve(@RequestBody ReserveTempDTO reserveTempDTO){
+    public ResponseEntity<?> saveReserve(@RequestBody ReserveTempDTO reserveTempDTO) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-        Long userId= userDetails.getId();
-        try{
-            ReserveTemp rt= reserveTempService.save(reserveTempDTO,userId);
+        Long userId = userDetails.getId();
+        try {
+            ReserveTemp rt = reserveTempService.save(reserveTempDTO, userId);
             return ResponseEntity.ok().body(rt);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             return ResponseEntity.badRequest().body("error");
         }
     }
 
-    @RequestMapping(value = "/deleteReserve/{reserveId}",method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteResrve(@PathVariable Long reserveId){
-        try{
+    @RequestMapping(value = "/deleteReserve/{reserveId}", method = RequestMethod.DELETE)
+    public ResponseEntity<?> deleteResrve(@PathVariable Long reserveId) {
+        try {
             reserveTempService.delete(reserveId);
             return ResponseEntity.ok().body("Success");
-        }catch (Exception ex){
+        } catch (Exception ex) {
             return ResponseEntity.badRequest().body("error");
         }
     }
 
-    @RequestMapping(value = "/userReservesBooks",method = RequestMethod.GET)
-    public ResponseEntity<?> findUserReserves(){
+    @RequestMapping(value = "/userReservesBooks", method = RequestMethod.GET)
+    public ResponseEntity<?> findUserReserves() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-        Long userId= userDetails.getId();
-        try{
-            List<ReserveTemp> rts=reserveTempService.usersReservesBooks(userId);
+        Long userId = userDetails.getId();
+        try {
+            List<ReserveTemp> rts = reserveTempService.usersReservesBooks(userId);
             return ResponseEntity.ok().body(rts);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             System.out.println(ex);
             return ResponseEntity.badRequest().body("error");
         }
     }
-    @RequestMapping(value = "/userReservesMovies",method = RequestMethod.GET)
-    public ResponseEntity<?> findUserReservesMovies(){
+
+    @RequestMapping(value = "/userReservesMovies", method = RequestMethod.GET)
+    public ResponseEntity<?> findUserReservesMovies() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-        Long userId= userDetails.getId();
-        try{
-            List<ReserveTemp> rts=reserveTempService.usersReservesMovies(userId);
+        Long userId = userDetails.getId();
+        try {
+            List<ReserveTemp> rts = reserveTempService.usersReservesMovies(userId);
             return ResponseEntity.ok().body(rts);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             return ResponseEntity.badRequest().body("error");
         }
     }
-    @RequestMapping(value = "/userBookReserve/{bookId}",method = RequestMethod.GET)
-    public ResponseEntity<?> findUserBookReserves(@PathVariable Integer bookId){
+
+    @RequestMapping(value = "/userBookReserve/{bookId}", method = RequestMethod.GET)
+    public ResponseEntity<?> findUserBookReserves(@PathVariable Integer bookId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-        Long userId= userDetails.getId();
-        try{
-            ReserveTemp rti= reserveTempService.getReserve(bookId,userId);
+        Long userId = userDetails.getId();
+        try {
+            ReserveTemp rti = reserveTempService.getReserve(bookId, userId);
             return ResponseEntity.ok().body(rti);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             return ResponseEntity.badRequest().body("error");
         }
     }
@@ -345,13 +381,13 @@ public class AdminController {
     //working for both movie and books
     @RequestMapping(value = "/extendIssue/{issueId}", method = RequestMethod.GET)
     public ResponseEntity<?> extendBookIssue(@PathVariable Long issueId) {
-        try{
+        try {
             Issue issue1 = issueService.get(issueId);
             if (issue1 != null) {
-                if (issueService.isBooks(issueId)){
+                if (issueService.isBooks(issueId)) {
                     System.out.println(issueService.isBooks(issueId));
                     return issueService.extendReturn(issue1);//function for books
-                }else {
+                } else {
                     System.out.println("are not books");
                     return issueService.extendReturnMovie(issue1);
                 }
@@ -359,7 +395,7 @@ public class AdminController {
             } else {
                 return ResponseEntity.ok().body("error");
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             return ResponseEntity.badRequest().body("error-ex");
         }
 
@@ -370,7 +406,7 @@ public class AdminController {
     public ResponseEntity<?> returnAllIssues(@PathVariable Long issueId) {
         Issue issue = issueService.get(issueId);
         if (issue != null) {
-            if (issueService.isBooks(issueId)){
+            if (issueService.isBooks(issueId)) {
                 System.out.println(issueService.isBooks(issueId));
                 List<IssuedBook> issuedBooks = issue.getIssuedBooks();
                 for (IssuedBook ib : issuedBooks) {
@@ -385,7 +421,7 @@ public class AdminController {
                 issue.setReturned(1);
                 issueService.save(issue);
                 return ResponseEntity.ok().body("successful all books returned");
-            }else {
+            } else {
                 System.out.println("are not books");
                 List<IssuedMovie> issuedMovies = issue.getIssuedMovies();
                 for (IssuedMovie im : issuedMovies) {
@@ -408,45 +444,47 @@ public class AdminController {
     }
 
     @RequestMapping(value = "/returnABook/{issuedBookId}", method = RequestMethod.GET)
-    public ResponseEntity<?> returnABook(@PathVariable Long issuedBookId){
+    public ResponseEntity<?> returnABook(@PathVariable Long issuedBookId) {
         IssuedBook issuedBook = issuedBookService.get(issuedBookId);
-      try {
-          if (issuedBook != null) {
-              //set the book returned
-              issuedBook.setReturned(1);
-              issuedBookService.save(issuedBook);
+        try {
+            if (issuedBook != null) {
+                //set the book returned
+                issuedBook.setReturned(1);
+                issuedBookService.save(issuedBook);
 
-              Book book = issuedBook.getBook();
-              Integer copies = book.getNoOfCopies();
-              book.setNoOfCopies(copies + 1);
-              bookService.save(book);
+                Book book = issuedBook.getBook();
+                Integer copies = book.getNoOfCopies();
+                book.setNoOfCopies(copies + 1);
+                bookService.save(book);
 
-              Issue issue=issueService.get(issuedBook.getIssue().getIssueId());
-              long count =issuedBookService.countBooksByIssueNotReturned(issue);
-              if (count == 0){
-                  issue.setReturned(1);
-                  issueService.save(issue);
-              }
-              return ResponseEntity.ok().body("success");
-          } else {
-              return ResponseEntity.ok().body("un-successful");
-          }
-      }catch (Exception ex){
-          return ResponseEntity.badRequest().body("error");
-      }
+                Issue issue = issueService.get(issuedBook.getIssue().getIssueId());
+                long count = issuedBookService.countBooksByIssueNotReturned(issue);
+                if (count == 0) {
+                    issue.setReturned(1);
+                    issueService.save(issue);
+                }
+                return ResponseEntity.ok().body("success");
+            } else {
+                return ResponseEntity.ok().body("un-successful");
+            }
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body("error");
+        }
     }
-//ADMIN
-@RequestMapping(value = "/viewIssuesR", method = RequestMethod.GET)
-public ResponseEntity<?> viewIssuedBooks() {
-    try {
-        List<Issue> userIssues = issueService.getAllReturned();
-        return ResponseEntity.ok().body(userIssues);
-    } catch (Exception e) {
-        return ResponseEntity.badRequest().body("error");
+
+    //ADMIN
+    @RequestMapping(value = "/viewIssuesR", method = RequestMethod.GET)
+    public ResponseEntity<?> viewIssuesReturned() {
+        try {
+            List<Issue> userIssues = issueService.getAllReturned();
+            return ResponseEntity.ok().body(userIssues);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("error");
+        }
     }
-}
+
     @RequestMapping(value = "/viewIssuesNR", method = RequestMethod.GET)
-    public ResponseEntity<?> viewNRIssuedBooks() {
+    public ResponseEntity<?> viewNRIssues() {
         try {
             List<Issue> userIssues = issueService.getAllUnreturned();
             return ResponseEntity.ok().body(userIssues);
@@ -454,10 +492,11 @@ public ResponseEntity<?> viewIssuedBooks() {
             return ResponseEntity.badRequest().body("error");
         }
     }
+
     //--------------------
     //both
     @RequestMapping(value = "/viewMyIssues", method = RequestMethod.GET)
-    public ResponseEntity<?> viewMyIssuedBooks() {
+    public ResponseEntity<?> viewMyIssus() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
@@ -473,7 +512,7 @@ public ResponseEntity<?> viewIssuedBooks() {
 
     //both
     @RequestMapping(value = "/viewMyReturnedIssues", method = RequestMethod.GET)
-    public ResponseEntity<?> viewMyReturnedIssuedBooks() {
+    public ResponseEntity<?> viewMyReturnedIssues() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
@@ -486,77 +525,49 @@ public ResponseEntity<?> viewIssuedBooks() {
         }
 
     }
-    @RequestMapping(value = "/isBooks/{issueId}",method = RequestMethod.GET)
-    public String isBooks(@PathVariable Long issueId){
-        if (issueService.isBooks(issueId)){
+
+    @RequestMapping(value = "/isBooks/{issueId}", method = RequestMethod.GET)
+    public String isBooks(@PathVariable Long issueId) {
+        if (issueService.isBooks(issueId)) {
             return "books";
-        }else{
+        } else {
             return "movies";
         }
     }
 
     //working both for movie and ooks
     @RequestMapping(value = "/viewIssued/{issueId}", method = RequestMethod.GET)
-    public ResponseEntity<?> viewIssuedBookOrMovie(@PathVariable Long issueId){
-       try{
-           if (issueService.isBooks(issueId)){
-               System.out.println(issueService.isBooks(issueId));
-               Issue issue=issueService.get(issueId);
-               List<IssuedBook> ibs= issuedBookService.findIssuedBooksBYissueNotReturned(issue);
-               return ResponseEntity.ok().body(ibs);
-           }else {
-               System.out.println("are movies");
-               Issue issue=issueService.get(issueId);
-               List<IssuedMovie> iMs=issuedMovieService.findIssuedMoviesByIssueNotReturned(issue);
-               return ResponseEntity.ok().body(iMs);
-           }
-       }catch (Exception e){
-           return ResponseEntity.badRequest().body("error");
-       }
-    }
-
-    @RequestMapping(value = "/viewReturnedIssued/{issueId}", method = RequestMethod.GET)
-    public ResponseEntity<?> viewReturnIssuedBOOKS(@PathVariable Long issueId){
-        try{
-            if (issueService.isBooks(issueId)){
-                System.out.println(issueService.isBooks(issueId));
-                Issue issue=issueService.get(issueId);
-                List<IssuedBook> ibs= issuedBookService.findIssuedBooksBYissueR(issue);
-                return ResponseEntity.ok().body(ibs);
-            }else {
-                System.out.println("are movies");
-                Issue issue=issueService.get(issueId);
-                List<IssuedMovie> iMs=issuedMovieService.findIssuedMoviesByIssueR(issue);
-                return ResponseEntity.ok().body(iMs);
-            }
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body("error");
-        }
-    }
-    //movie csv functions
-    @RequestMapping(value = "/addCSVMovie")
-    public ResponseEntity<?> addCSVMovie(@RequestBody MovieDTO movieDTO) {
+    public ResponseEntity<?> viewIssuedBookOrMovie(@PathVariable Long issueId) {
         try {
-            if (movieService.existsByTitle(movieDTO.getTitle())) {
-                return ResponseEntity.badRequest().body("existsTitle");
+            if (issueService.isBooks(issueId)) {
+                System.out.println(issueService.isBooks(issueId));
+                Issue issue = issueService.get(issueId);
+                List<IssuedBook> ibs = issuedBookService.findIssuedBooksBYissueNotReturned(issue);
+                return ResponseEntity.ok().body(ibs);
             } else {
-                movieService.addMovie(movieDTO);
-                readerMovie.removeLine(movieDTO.getTitle());
-                return ResponseEntity.ok("success");
+                System.out.println("are movies");
+                Issue issue = issueService.get(issueId);
+                List<IssuedMovie> iMs = issuedMovieService.findIssuedMoviesByIssueNotReturned(issue);
+                return ResponseEntity.ok().body(iMs);
             }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("error");
         }
     }
-    @RequestMapping(method = RequestMethod.PUT, value = "/updateCSVMovie/{movieId}")
-    public ResponseEntity<?> updateCSVMovie(@Valid @PathVariable Integer movieId, @RequestBody MovieDTO movieDTO) {
+
+    @RequestMapping(value = "/viewReturnedIssued/{issueId}", method = RequestMethod.GET)
+    public ResponseEntity<?> viewReturnIssuedBOOKS(@PathVariable Long issueId) {
         try {
-            if (movieService.existsByTitle(movieDTO.getTitle())) {
-                movieService.updateMovieCopies(movieDTO, movieId);
-                readerMovie.removeLine(movieDTO.getTitle());
-                return ResponseEntity.ok().body(movieDTO);
+            if (issueService.isBooks(issueId)) {
+                System.out.println(issueService.isBooks(issueId));
+                Issue issue = issueService.get(issueId);
+                List<IssuedBook> ibs = issuedBookService.findIssuedBooksBYissueR(issue);
+                return ResponseEntity.ok().body(ibs);
             } else {
-                return ResponseEntity.badRequest().body("dontExists");
+                System.out.println("are movies");
+                Issue issue = issueService.get(issueId);
+                List<IssuedMovie> iMs = issuedMovieService.findIssuedMoviesByIssueR(issue);
+                return ResponseEntity.ok().body(iMs);
             }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("error");
@@ -576,8 +587,8 @@ public ResponseEntity<?> viewIssuedBooks() {
 
     //return a movie
     @RequestMapping(value = "/returnAMovie/{issuedMovieId}", method = RequestMethod.GET)
-    public ResponseEntity<?> returnAMovie(@PathVariable Long issuedMovieId){
-        IssuedMovie issuedMovie=issuedMovieService.get(issuedMovieId);
+    public ResponseEntity<?> returnAMovie(@PathVariable Long issuedMovieId) {
+        IssuedMovie issuedMovie = issuedMovieService.get(issuedMovieId);
         try {
             if (issuedMovie != null) {
                 //set the book returned
@@ -589,9 +600,9 @@ public ResponseEntity<?> viewIssuedBooks() {
                 movie.setNoOfCopies(copies + 1);
                 movieService.save(movie);
 
-                Issue issue=issueService.get(issuedMovie.getIssue().getIssueId());
-                long count =issuedMovieService.countMoviesByIssueNotReturned(issue);
-                if (count == 0){
+                Issue issue = issueService.get(issuedMovie.getIssue().getIssueId());
+                long count = issuedMovieService.countMoviesByIssueNotReturned(issue);
+                if (count == 0) {
                     issue.setReturned(1);
                     issueService.save(issue);
                 }
@@ -599,31 +610,10 @@ public ResponseEntity<?> viewIssuedBooks() {
             } else {
                 return ResponseEntity.ok().body("un-success");
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             return ResponseEntity.badRequest().body("error");
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     //temp
