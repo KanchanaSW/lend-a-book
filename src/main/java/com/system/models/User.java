@@ -50,6 +50,15 @@ public class User {
 		this.subscription=subscription;
 	}
 
+	public User(String email, String password, String fullname, String DOB, String image, boolean isBlacklisted) {
+		this.email = email;
+		this.password = password;
+		this.fullname = fullname;
+		this.DOB = DOB;
+		this.image = image;
+		this.isBlacklisted = isBlacklisted;
+	}
+
 	/*
 	@ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
 	@JoinTable(	name = "user_roles", 

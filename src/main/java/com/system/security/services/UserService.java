@@ -76,6 +76,9 @@ public class UserService {
         return userRepository.name(name);
     }
 
+    public void deleteByUser(User user){
+        userRepository.delete(user);
+    }
 
     public void deleteUser(Long id) {
        /* if (otpRepository.existsByUserUserId(userID)){

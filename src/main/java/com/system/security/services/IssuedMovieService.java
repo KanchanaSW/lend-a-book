@@ -22,6 +22,8 @@ public class IssuedMovieService {
         return issuedMovieRepository.findById(movieId).get();
     }
 
+    public List<IssuedMovie> getAll(){return issuedMovieRepository.findAll();}
+
     public IssuedMovie save(IssuedMovie issuedMovie) {
         return issuedMovieRepository.save(issuedMovie);
     }
