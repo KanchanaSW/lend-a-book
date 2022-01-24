@@ -36,15 +36,16 @@ public class ReserveTempService {
                 Book book= bookService.findBook(reserveTempDTO.getBookId());
                 if (!reserveTempRepository.existsByBookAndUser(book,user)){
                     reserveTemp.setBook(book);
+                    reserveTempRepository.save(reserveTemp);
                 }
             }
             if (reserveTempDTO.getMovieId() != null) {
                 Movie movie = movieService.findMovie(reserveTempDTO.getMovieId());
                 if (!reserveTempRepository.existsByMovieAndUser(movie, user)) {
                     reserveTemp.setMovie(movie);
+                    reserveTempRepository.save(reserveTemp);
                 }
             }
-            reserveTempRepository.save(reserveTemp);
             return reserveTemp;
 
         }catch (Exception ex){
