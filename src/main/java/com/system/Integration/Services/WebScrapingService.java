@@ -18,33 +18,40 @@ import java.util.Objects;
 @Service
 public class WebScrapingService {
 
-    public List<WebScrapping> getWebScrapeBook() throws IOException {
+    public List<WebScrapping> getWebScrapeBook2() throws IOException {
         List<WebScrapping> webScrappingList = new ArrayList<>();
-
+        String bookA = null;
         Document document = Jsoup.
-                connect("https://www.valorebooks.com/top-textbook-rentals").get();
+                connect("https://play.google.com/store/books/collection/cluster?clp=sgIqCiIKHHByb21vdGlvbl9lYm9va19kZWFsc19yZW50YWwQRBgBIgQIBQgs:S:ANO1ljIfC-g&gsr=Ci2yAioKIgoccHJvbW90aW9uX2Vib29rX2RlYWxzX3JlbnRhbBBEGAEiBAgFCCw%3D:S:ANO1ljKWZ3w&hl=en&gl=US").get();
 
-        Elements body=document.select("div#main_rental_results");
+        Elements body = document.select("div.ZmHEEd ");
         //System.out.println(body.select("div.result_listing").size());
-        for (Element e : body.select("div.result_listing")) {
+        for (Element e : body.select("div.ImZGtf.mpg5gc")) {
 
-            String url=e.select("div.info > div.product_thumb a").attr("href");
-            String bookLink = "https://www.valorebooks.com"+url;
+            String url = e.select("div.wXUyZd a").attr("href");
+            String bookLink = "https://play.google.com" + url + "&hl=en_US&gl=US";//
 
-            String coverImage = e.select("div.info > div.product_thumb > a img").attr("src");
-            String bookTitle = e.select("div.info > div.product_thumb > a img").attr("alt");
+            String coverImage = e.select("img").attr("data-src");
+            String bookTitle = e.select("div.WsMG1c.nnK0zc").attr("title");//
 
-            String bookAuthor = e.select("div.info > div.desc span.by").text();
-            String price=e.select("div.price > a.rent_it").text();
+            String author = e.select(".b8cIId.ReQCgd.KoLSrc").text();
+            String price = e.select(".VfPpfd.ZdBevf.i5DZme").text();
 
+
+            if (author.equals("Book 2") || author.equals("Book 1") || author.equals("Vol 1")) {
+                bookA = "Not-Available";
+            } else {
+                bookA = author;
+            }
             WebScrapping webScrapping = new WebScrapping
-                    (coverImage, bookTitle, bookAuthor, bookLink,price);
+                    (coverImage, bookTitle, bookA, bookLink, price);
             webScrappingList.add(webScrapping);
 
         }
         System.out.println(webScrappingList);
         return webScrappingList;
     }
+
 
     public List<WebScrapingMovie> getScrapedMovies() throws IOException {
         List<WebScrapingMovie> webScrappingList = new ArrayList<>();
@@ -60,7 +67,7 @@ public class WebScrapingService {
 
             WebScrapingMovie webScrapping = new WebScrapingMovie
                     (coverImage, movieTitle, movieLink, rentPrice);
-            if (!Objects.equals(webScrapping.getMovieTitle(), "")){
+            if (!Objects.equals(webScrapping.getMovieTitle(), "")) {
                 webScrappingList.add(webScrapping);
             }
         }
@@ -81,7 +88,7 @@ public class WebScrapingService {
 
             WebScrapingMovie webScrapping = new WebScrapingMovie
                     (coverImage, movieTitle, movieLink, rentPrice);
-            if (!Objects.equals(webScrapping.getMovieTitle(), "")){
+            if (!Objects.equals(webScrapping.getMovieTitle(), "")) {
                 webScrappingList.add(webScrapping);
             }
         }
@@ -217,6 +224,34 @@ public class WebScrapingService {
                         (coverImage, bookTitle, bookAuthor, bookLink);
                 webScrappingList.add(webScrapping);
             }
+
+        }
+        System.out.println(webScrappingList);
+        return webScrappingList;
+    }*/
+    /*
+    * public List<WebScrapping> getWebScrapeBook() throws IOException {
+        List<WebScrapping> webScrappingList = new ArrayList<>();
+
+        Document document = Jsoup.
+                connect("https://www.valorebooks.com/top-textbook-rentals").get();
+
+        Elements body=document.select("div#main_rental_results");
+        //System.out.println(body.select("div.result_listing").size());
+        for (Element e : body.select("div.result_listing")) {
+
+            String url=e.select("div.info > div.product_thumb a").attr("href");
+            String bookLink = "https://www.valorebooks.com"+url;
+
+            String coverImage = e.select("div.info > div.product_thumb > a img").attr("src");
+            String bookTitle = e.select("div.info > div.product_thumb > a img").attr("alt");
+
+            String bookAuthor = e.select("div.info > div.desc span.by").text();
+            String price=e.select("div.price > a.rent_it").text();
+
+            WebScrapping webScrapping = new WebScrapping
+                    (coverImage, bookTitle, bookAuthor, bookLink,price);
+            webScrappingList.add(webScrapping);
 
         }
         System.out.println(webScrappingList);

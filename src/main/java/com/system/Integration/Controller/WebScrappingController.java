@@ -25,7 +25,7 @@ public class WebScrappingController {
 
     @GetMapping("booksData")
     public List<WebScrapping> getScrapeData() throws IOException {
-        return webScrapingService.getWebScrapeBook();
+        return webScrapingService.getWebScrapeBook2();
     }
 
     @GetMapping("movieData")
